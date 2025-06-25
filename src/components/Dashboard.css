@@ -1,0 +1,240 @@
+.modal-backdrop {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+.modal {
+  background: #fff;
+  padding: 2em;
+  border-radius: 8px;
+  min-width: 300px;
+  min-height: 100px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+}
+
+/* Base container */
+.users-container {
+  flex: 1;
+  background: #f5f6fa;
+  padding: 24px;
+  min-height: 100vh;
+  font-family: 'Segoe UI', 'Roboto', 'Arial', sans-serif;
+}
+
+/* Header */
+.users-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+}
+
+/* Title and Export Button */
+.users-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.users-title h2 {
+  margin: 0;
+  font-size: 2rem;
+  font-weight: 600;
+}
+.export-btn {
+  padding: 8px 16px;
+  background: #2d8cff;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.export-btn:hover {
+  background: #1764c5;
+}
+
+/* Filter and action bar */
+.users-filters {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 18px;
+}
+.users-filters input,
+.users-filters select {
+  padding: 6px 12px;
+  border: 1px solid #d1d1d1;
+  border-radius: 4px;
+  font-size: 1rem;
+}
+.users-filters button {
+  padding: 7px 14px;
+  border-radius: 4px;
+  border: none;
+  background: #e6e6e6;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.users-filters button:hover {
+  background: #d1d1d1;
+}
+.users-filters button[disabled] {
+  background: #f5f6fa;
+  color: #bbb;
+  cursor: not-allowed;
+}
+
+/* Table */
+.users-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #fff;
+  border-radius: 8px;
+  overflow: hidden;
+  margin-top: 18px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+.users-table th, .users-table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid #ececec;
+  text-align: left;
+}
+.users-table th {
+  background: #f1f3f6;
+  font-weight: 600;
+  cursor: pointer;
+  user-select: none;
+}
+.users-table tr:hover {
+  background: #f6faff;
+}
+.users-table tr.selected {
+  background: #eef;
+}
+.users-table td input[type="checkbox"] {
+  transform: scale(1.2);
+}
+
+/* Status tags */
+.status-active {
+  background: #d4f7d4;
+  color: #217a32;
+  padding: 2px 8px;
+  border-radius: 5px;
+  font-size: 0.95em;
+}
+.status-deactivated {
+  background: #f7d4d4;
+  color: #a11e1e;
+  padding: 2px 8px;
+  border-radius: 5px;
+  font-size: 0.95em;
+}
+
+/* Online tags */
+.online {
+  color: #13b713;
+  font-weight: 600;
+}
+.offline {
+  color: #c93030;
+  font-weight: 600;
+}
+
+/* Action buttons in table */
+.users-table .action-btn {
+  margin-right: 6px;
+  padding: 5px 10px;
+  background: #e6e6e6;
+  border: none;
+  border-radius: 4px;
+  font-size: 0.98em;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.users-table .action-btn:hover:not([disabled]) {
+  background: #d1d1d1;
+}
+.users-table .action-btn[disabled] {
+  color: #bbb;
+  background: #f5f6fa;
+  cursor: not-allowed;
+}
+.users-table .delete-btn {
+  color: #d92b2b;
+}
+
+/* Pagination */
+.users-pagination {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 20px 0;
+}
+.users-pagination button {
+  background: #e6e6e6;
+  border: none;
+  border-radius: 4px;
+  padding: 6px 12px;
+  cursor: pointer;
+  font-weight: 500;
+}
+.users-pagination button:disabled {
+  background: #f5f6fa;
+  color: #bbb;
+  cursor: not-allowed;
+}
+.users-pagination select, .users-pagination input[type="number"] {
+  padding: 5px 10px;
+  border-radius: 4px;
+  border: 1px solid #d1d1d1;
+}
+
+/* Modal styles */
+.modal-backdrop {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.1);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.modal {
+  background: #fff;
+  padding: 32px 28px;
+  border-radius: 8px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.13);
+  min-width: 320px;
+  max-width: 90vw;
+}
+.modal table {
+  width: 100%;
+  margin-bottom: 18px;
+}
+.modal button {
+  margin-right: 8px;
+}
+
+/* Responsive */
+@media (max-width: 700px) {
+  .users-table th, .users-table td {
+    padding: 7px 6px;
+    font-size: 0.92em;
+  }
+  .modal {
+    padding: 18px 8px;
+    min-width: 220px;
+  }
+  .users-filters {
+    flex-direction: column;
+    gap: 8px;
+    align-items: stretch;
+  }
+}

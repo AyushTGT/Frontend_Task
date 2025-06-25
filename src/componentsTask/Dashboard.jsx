@@ -1,0 +1,333 @@
+import React, { useState, useEffect } from "react";
+import { Bar, Pie, Line } from "react-chartjs-2";
+import {
+    Chart as ChartJS,
+    CategoryScale,
+    LinearScale,
+    BarElement,
+    ArcElement,
+    Title,
+    Tooltip,
+    Legend,
+    PointElement,
+    LineElement,
+} from "chart.js";
+import MetricCards from "./MetricCards";
+import Header from "./Header";
+import {
+    fetchTaskCount,
+    userDetails,
+    overDue,
+    thisMonth,
+} from "../apis/taskapis";
+import NotificationBell from "./Notification";
+
+ChartJS.register(
+    CategoryScale,
+    LinearScale,
+    BarElement,
+    ArcElement,
+    Title,
+    Tooltip,
+    Legend,
+    PointElement,
+    LineElement
+);
+
+// Dashboardtask component to display task metrics and charts
+
+export default function Dashboardtask() {
+    const [metrics, setMetrics] = useState([
+        { label: "Tasks Completed", value: 0 },
+        { label: "Pending Tasks", value: 0 },
+        { label: "Total Tasks", value: 0 },
+        { label: "Overdue Tasks", value: 0 },
+        { label: "Tasks Completed This Month", value: 0 },
+        { label: "Tasks Due Today", value: 0 },
+    ]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const [user, setUser] = useState(null);
+    const [userError, setUserError] = useState(null);
+
+    useEffect(() => {
+        async function fetchUser() {
+            try {
+                const userData = await userDetails();
+                setUser(userData);
+            } catch (err) {
+                setUserError(err.message);
+            }
+        }
+        fetchUser();
+    }, []);
+
+    useEffect(() => {
+        async function getMetrics() {
+            setLoading(true);
+            setError(null);
+
+            try {
+                const [
+                    completed,
+                    pending,
+                    total,
+                    overdue,
+                    completedThisMonth,
+                    dueToday,
+                ] = await Promise.all([
+                    fetchTaskCount({ status: "completed" }),
+                    fetchTaskCount({ status: "pending" }),
+                    fetchTaskCount(),
+                    overDue(),
+                    thisMonth(),
+                    fetchTaskCount({
+                        due_date: new Date().toISOString().slice(0, 10),
+                    }),
+                ]);
+
+                setMetrics([
+                    { label: "Projects Completed", value: completed },
+                    { label: "Pending Projects", value: pending },
+                    { label: "Total Tasks", value: total },
+                    { label: "Overdue Tasks", value: overdue },
+                    {
+                        label: "Tasks Completed This Month",
+                        value: completedThisMonth,
+                    },
+                    { label: "Tasks Due Today", value: dueToday },
+                ]);
+            } catch (err) {
+                setError(err.message);
+            }
+
+            setLoading(false);
+        }
+
+        getMetrics();
+    }, []);
+
+    const [tasksPerDayData, setTasksPerDayData] = useState({
+        labels: Array.from({ length: 7 }, (_, i) => {
+            const date = new Date();
+            date.setDate(date.getDate() - (6 - i));
+            return date.toLocaleDateString("default", { weekday: "short" });
+        }),
+        datasets: [
+            {
+                label: "Tasks Completed",
+                data: [0, 0, 0, 0, 0, 0, 0],
+                backgroundColor: "blue",
+            },
+        ],
+    });
+
+    useEffect(() => {
+        async function fetchTasksPerDay() {
+            try {
+                const response = await fetch(
+                    "http://localhost:8000/completedTasks"
+                );
+                const result = await response.json();
+                setTasksPerDayData((prev) => ({
+                    ...prev,
+                    datasets: [
+                        {
+                            ...prev.datasets[0],
+                            data: result?.data || [0, 0, 0, 0, 0, 0, 0],
+                        },
+                    ],
+                }));
+            } catch (err) {
+                console.error("Failed to fetch completed tasks:", err);
+            }
+        }
+        fetchTasksPerDay();
+    }, []);
+
+    const overdueTasksData = {
+        labels: ["Overdue", "On Time"],
+        datasets: [
+            {
+                data: [metrics[3].value, metrics[2].value - metrics[3].value],
+                backgroundColor: ["#e74c3c", "#2ecc71"],
+            },
+        ],
+    };
+
+    const tasksByStatusData = {
+        labels: ["Completed", "Pending", "Overdue"],
+        datasets: [
+            {
+                label: "Tasks by Status",
+                data: [metrics[0].value, metrics[1].value, metrics[3].value],
+                backgroundColor: ["#2ecc71", "#f1c40f", "#e74c3c"],
+            },
+        ],
+    };
+
+    const months = Array.from({ length: 12 }, (_, i) => {
+        const date = new Date();
+        date.setMonth(date.getMonth() - (11 - i));
+        return date.toLocaleString("default", { month: "short" });
+    });
+
+    const [tasksCreated, setTasksCreated] = useState(Array(12).fill(0));
+    const [tasksCompleted, setTasksCompleted] = useState(Array(12).fill(0));
+
+    useEffect(() => {
+        async function fetchTasksCreatedVsCompleted() {
+            try {
+                const response = await fetch("http://localhost:8000/byMonths");
+                const result = await response.json();
+                setTasksCreated(result.created || Array(12).fill(0));
+                setTasksCompleted(result.completed || Array(12).fill(0));
+            } catch (err) {
+                console.error(
+                    "Failed to fetch tasks created vs completed:",
+                    err
+                );
+            }
+        }
+        fetchTasksCreatedVsCompleted();
+    }, []);
+
+    const tasksCreatedVsCompletedData = {
+        labels: months,
+        datasets: [
+            {
+                label: "Tasks Created",
+                data: tasksCreated,
+                borderColor: "aqua",
+                backgroundColor: "white",
+                fill: true,
+                
+            },
+            {
+                label: "Tasks Completed",
+                data: tasksCompleted,
+                borderColor: "green",
+                backgroundColor: "white",
+                fill: true,
+                
+            },
+        ],
+    };
+
+    return (
+        <div style={{ flex: 1, background: "#f5f6fa", padding: "24px" }}>
+            <Header user={user} />
+            <NotificationBell assigneeId={user?.id} />
+
+            {loading ? (
+                <div>Loading metrics...</div>
+            ) : error ? (
+                <div style={{ color: "red" }}>{error}</div>
+            ) : (
+                <MetricCards metrics={metrics} />
+            )}
+
+            <div
+                style={{
+                    display: "flex",
+                    gap: 24,
+                    marginBottom: 24,
+                }}
+            >
+                <div
+                    style={{
+                        flex: "1 1 320px",
+                        background: "#fff",
+                        padding: 24,
+                        borderRadius: 14,
+                        minWidth: 320,
+                        boxShadow: "0 2px 10px rgba(30,40,80,0.05)",
+                        transition: "box-shadow 0.2s",
+                        alignItems: "center",
+                        display: "flex",
+                    }}
+                >
+                    <Bar
+                        data={tasksPerDayData}
+                        options={{
+                            responsive: true,
+                            plugins: { legend: { position: "bottom" },
+                    },
+                        }}
+                    />
+                </div>
+                <div
+                    style={{
+                        flex: "1 1 320px",
+                        background: "#fff",
+                        padding: 24,
+                        borderRadius: 14,
+                        minWidth: 320,
+                        boxShadow: "0 2px 10px rgba(30,40,80,0.05)",
+                        transition: "box-shadow 0.2s",
+                    }}
+                >
+                    <Pie
+                        data={overdueTasksData}
+                        options={{
+                            responsive: true,
+                            plugins: { legend: { position: "bottom" } },
+                            radius: "80%",
+                        }}
+                    />
+                </div>
+            </div>
+
+            <div
+                style={{
+                    display: "flex",
+                    gap: 24,
+                    flexWrap: "wrap",
+                    marginBottom: 24,
+                }}
+            >
+                <div
+                    style={{
+                        flex: "1 1 100px",
+                        background: "#fff",
+                        padding: 24,
+                        borderRadius: 14,
+                        minWidth: 100,
+                        boxShadow: "0 0 10px rgba(30,40,80,0.05)",
+                        transition: "box-shadow 0.2s",
+                    }}
+                >
+                    <Bar
+                        data={tasksByStatusData}
+                        options={{
+                            responsive: true,
+                            plugins: { legend: { position: "bottom" } },
+                        }}
+                    />
+                </div>
+                <div
+                    style={{
+                        flex: "1 1 100px",
+                        background: "#fff",
+                        padding: 24,
+                        borderRadius: 14,
+                        minWidth: 100,
+                        boxShadow: "0 2px 10px rgba(30,40,80,0.05)",
+                        transition: "box-shadow 0.2s",
+                    }}
+                >
+                    <Line
+                        data={tasksCreatedVsCompletedData}
+                        options={{
+                            responsive: true,
+                            plugins: { legend: { position: "bottom" } },
+                            scales: {
+                                y: { beginAtZero: true },
+                            },
+                        }}
+                    />
+                </div>
+            </div>
+        </div>
+    );
+}
