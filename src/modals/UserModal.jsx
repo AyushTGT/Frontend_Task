@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import Cookies from "js-cookie";
-import "./Dashboard.css"; // Assuming you have a CSS file for styles
+import "../components/Dashboard.css"; // Assuming you have a CSS file for styles
 
 const roleOptions = ["User", "Admin", "Master"];
 

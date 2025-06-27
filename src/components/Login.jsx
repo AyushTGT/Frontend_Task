@@ -3,10 +3,13 @@ import Loginform from "./Loginform";
 import { useNavigate } from "react-router-dom";
 import Cookies from "js-cookie";
 import Header from "./Header";
+import { useState } from "react";
+import ErrorModal from "../modals/ErrorModal";
 
 //Handling login logic with fomr in loginform.jsx page
 
 export default function LoginPage() {
+    const [error, setError] = useState(null);
     const navigate = useNavigate();
 
     const handleFormSubmit = async (formData) => {
@@ -19,14 +22,14 @@ export default function LoginPage() {
                 )}`
             );
             if (!response.ok) {
-                alert("Error checking email availability");
+                setError("Error checking email availability");
                 return;
             }
             const emailExists = await response.json();
 
             if (emailExists.deleted !== null) {
                 if (emailExists.deleted !== email) {
-                    alert("Email is deleted.");
+                    setError("Email is deleted.");
                     navigate("/login");
                     return;
                 } else {
@@ -41,10 +44,10 @@ export default function LoginPage() {
                         }
                     );
                     if (!reRegisterResponse.ok) {
-                        alert("Error re-registering user");
+                        setError("Error re-registering user");
                         return;
                     }
-                    alert(
+                    setError(
                         "Re-registration email sent. Please check your inbox to verify your account."
                     );
                     navigate("/login");
@@ -53,7 +56,7 @@ export default function LoginPage() {
             }
 
             if (emailExists.exists && emailExists.verified === false) {
-                alert(
+                setError(
                     "Email is not verified. Please verify your email first and login."
                 );
                 navigate("/login");
@@ -74,15 +77,15 @@ export default function LoginPage() {
 
             if (!regResponse.ok) {
                 const backendError = result.error || "Login failed";
-                alert("Error during login: " + backendError);
+                setError("Error during login: " + backendError);
                 return;
             }
 
-            Cookies.set("jwt_token", result.token, { expires: 7 }); 
+            Cookies.set("jwt_token", result.token, { expires: 7 });
 
             navigate("/Home");
         } catch (error) {
-            alert("Error during login: " + JSON.stringify(error.message));
+            setError("Error during login: " + JSON.stringify(error.message));
         }
     };
 
@@ -103,6 +106,12 @@ export default function LoginPage() {
                 }}
             >
                 <Loginform onSubmit={handleFormSubmit} />
+
+                <ErrorModal
+                    open={!!error}
+                    message={error}
+                    onClose={() => setError("")}
+                />
             </div>
         </div>
     );

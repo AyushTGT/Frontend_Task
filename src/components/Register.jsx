@@ -2,11 +2,17 @@ import React from "react";
 import RegistrationForm from "./Registration";
 import { useNavigate } from "react-router-dom";
 import Header from "./Header";
+import { useState } from "react";
+import "./Dashboard.css";
+import ErrorModal from "../modals/ErrorModal";
 
 export default function RegisterPage() {
     const navigate = useNavigate();
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState(null);
 
     const handleFormSubmit = async (formData) => {
+        setIsLoading(true);
         const { name, email, password, role } = formData;
 
         try {
@@ -16,20 +22,23 @@ export default function RegisterPage() {
                 )}`
             );
             if (!response.ok) {
-                alert("Error checking email availability");
+                setError("Error checking email availability");
+                setIsLoading(false);
                 return;
             }
             const emailExists = await response.json();
 
             if (emailExists.exists && emailExists.verified === true) {
-                alert("Already registered with this email. Please login.");
+                setError("Already registered with this email. Please login.");
                 navigate("/login");
+                setIsLoading(false);
                 return;
             } else if (emailExists.exists && emailExists.verified === false) {
-                alert(
+                setError(
                     "Email is not verified. Please verify your email first and login."
                 );
                 navigate("/login");
+                setIsLoading(false);
                 return;
             }
 
@@ -47,17 +56,20 @@ export default function RegisterPage() {
                 }
             );
             if (!regResponse.ok) {
+                setIsLoading(false);
                 throw new Error("Registration failed");
             }
             const result = await regResponse.json();
-            alert(
+            setError(
                 "Registration successful!\n" + JSON.stringify(result.message)
             );
             navigate("/login");
         } catch (error) {
-            alert(
+            setError(
                 "Error during registration: " + JSON.stringify(error.message)
             );
+        } finally {
+            setIsLoading(false);
         }
     };
 
@@ -78,6 +90,16 @@ export default function RegisterPage() {
                 }}
             >
                 <RegistrationForm onSubmit={handleFormSubmit} />
+
+                {isLoading && (
+                    <div className="spinner" style={{ marginTop: "20px" }}></div>
+                )}
+
+                <ErrorModal
+                    open={!!error}
+                    message={error}
+                    onClose={() => setError("")}
+                />
             </div>
         </div>
     );

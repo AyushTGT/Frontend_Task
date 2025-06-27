@@ -1,9 +1,9 @@
 import Header from "./Header";
 import React, { useEffect, useState } from "react";
 import { userDetails } from "../apis/taskapis";
-import {TasksListPage} from "./KanbanListing";
+import { TasksListPage } from "./Kanban/KanbanListing";
 import axios from "axios";
-import AddTaskModal from "./AddTaskModal";
+import AddTaskModal from "../modals/AddTaskModal";
 import Cookies from "js-cookie";
 
 //Taks listing component from kanban listing page
@@ -42,28 +42,36 @@ export default function Tasklisting() {
         <div style={{ flex: 1, background: "#f5f6fa", padding: "24px" }}>
             <Header user={user} />
             <div
+                style={{
+                    width: "100%",
+                    minHeight: "70px",
+                    background: "#fff",
+                    borderRadius: "32px",
+                    display: "flex",
+                    // alignItems: "center",
+                    // verticalAlign: "middle",
+                    justifyContent: "center",
+                    marginBottom: "32px",
+                    boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
+                    cursor: "pointer",
+                    fontSize: "48px",
+                    color: "#888",
+                    transition: "box-shadow 0.2s",
+                    border: "2px dashed #ddd",
+                }}
+                onClick={() => setAddTaskOpen(true)}
+                title="Add Task"
+            >
+                <span
                     style={{
-                        width: "100%",
-                        minHeight: "70px",
-                        background: "#fff",
-                        borderRadius: "32px",
-                        display: "flex",
-                        // alignItems: "center",
-                        // verticalAlign: "middle",
-                        justifyContent: "center",
-                        marginBottom: "32px",
-                        boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
-                        cursor: "pointer",
-                        fontSize: "48px",
-                        color: "#888",
-                        transition: "box-shadow 0.2s",
-                        border: "2px dashed #ddd",
+                        fontSize: "64px",
+                        fontWeight: "bold",
+                        lineHeight: 1,
                     }}
-                    onClick={() => setAddTaskOpen(true)}
-                    title="Add Task"
                 >
-                    <span style={{ fontSize: "64px", fontWeight: "bold", lineHeight: 1 }}>+</span>
-                </div>
+                    +
+                </span>
+            </div>
             <div>
                 <TasksListPage user={user} />
                 <AddTaskModal

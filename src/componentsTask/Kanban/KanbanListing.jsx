@@ -3,9 +3,10 @@ import { KanbanBoardContainer, KanbanBoard } from "./KanbanBoard.jsx";
 import { KanbanColumn } from "./KanbanColumn.jsx";
 import { KanbanItem } from "./KanbanItem.jsx";
 import { ProjectCardMemo } from "./KanbanCard.jsx";
-import TaskDetailModal from "./TaskDetailModal.jsx";
+import TaskDetailModal from "../../modals/TaskDetailModal.jsx";
 import axios from "axios";
 import Cookies from "js-cookie";
+import ErrorModal from "../../modals/ErrorModal.jsx";
 
 const KANBAN_STAGES = [
     { id: "unassigned", title: "UNASSIGNED", apiStatus: "unassigned" },
@@ -23,6 +24,7 @@ function mapStatusToColumn(status, due_date) {
         const today = new Date();
         if (due < today.setHours(0, 0, 0, 0)) return "overdue";
     }
+    if (status === "overdue") return "overdue";
     if (status === "unassigned") return "unassigned";
     if (status === "pending") return "pending";
     if (status === "completed") return "completed";
@@ -37,7 +39,7 @@ export function TasksListPage({ user /*,children*/ }) {
     const [taskDetailOpen, setTaskDetailOpen] = useState(false);
     const token = Cookies.get("jwt_token");
     const [reporterOptions, setReporterOptions] = useState([]);
-
+    const [errors, setErrors] = useState(null);
 
     useEffect(() => {
         axios
@@ -140,29 +142,30 @@ export function TasksListPage({ user /*,children*/ }) {
         );
         const updatedTask = tasks.find((task) => task.id === taskId);
         if (updatedTask && updatedTask.stageId !== newStageId) {
-            try {
-                axios
-                    .put(
-                        `http://localhost:8000/updateTaskStatus/${taskId}`,
-                        {
-                            ...updatedTask._raw,
-                            status: newStageId,
+            axios
+                .put(
+                    `http://localhost:8000/updateTaskStatus/${taskId}`,
+                    {
+                        ...updatedTask._raw,
+                        status: newStageId,
+                    },
+                    {
+                        headers: {
+                            Authorization: `Bearer ${token}`,
                         },
-                        {
-                            headers: {
-                                Authorization: `Bearer ${token}`,
-                            },
-                        }
-                    )
-                    .then(() => {
-                        fetchTasks();
-                    });
-            } catch (err) {
-                alert(
-                    "Error updating task status: " +
-                        (err.response?.data?.message || err.message)
-                );
-            }
+                    }
+                )
+                .then(() => {
+                    fetchTasks();
+                })
+                .catch((err) => {
+                    setErrors(
+                        "Error updating task status: " +
+                            (err.response?.data?.error ||
+                                err.response?.data?.message ||
+                                err.message)
+                    );
+                });
         }
     }
 
@@ -218,6 +221,12 @@ export function TasksListPage({ user /*,children*/ }) {
                 onUpdate={handleTaskUpdate}
                 userOptions={reporterOptions}
                 user={user}
+            />
+
+            <ErrorModal
+                open={!!errors}
+                message={errors}
+                onClose={() => setErrors("")}
             />
         </>
     );

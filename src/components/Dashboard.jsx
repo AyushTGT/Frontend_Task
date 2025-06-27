@@ -1,12 +1,18 @@
 import React, { use, useEffect, useRef, useState } from "react";
 import Cookies from "js-cookie";
 import "./Dashboard.css";
-import UserModal from "./UserModal";
-import UserModalAdd from "./UserModalAdd";
+import UserModal from "../modals/UserModal.jsx";
+import UserModalAdd from "../modals/UserModalAdd.jsx";
 import Header from "./HeaderDashboard.jsx";
 import { useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
+import { connect } from "react-redux";
+import { fetchProfile } from "../redux/profileActions";
+import ErrorModal from "../modals/ErrorModal.jsx";
 
-export default function Dashboard() {
+function Dashboard({ myProfile1 }) {
+    console.log({ myProfile1 });
     const navigate = useNavigate();
     const [users, setUsers] = useState([]);
     const [pagination, setPagination] = useState({
@@ -26,9 +32,10 @@ export default function Dashboard() {
     const [profileModal, setProfileModal] = useState(false);
     const [myProfile, setMyProfile] = useState(null);
     const token = Cookies.get("jwt_token");
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState("");
 
     const searchTimeout = useRef(null);
-
 
     // Getting the users from the backend with the applied parameters
     function fetchUsers({
@@ -56,7 +63,7 @@ export default function Dashboard() {
         })
             .then((res) => {
                 if (res.status === 401) {
-                    alert("Session expired. Please log in again.");
+                    setError("Session expired. Please log in again.");
                     window.location.href = "/login";
                     return;
                 }
@@ -76,8 +83,8 @@ export default function Dashboard() {
 
     // Fetching the profile of the logged-in user
     const fetchProfile = () => {
-        const email = Cookies.get("email");
-        fetch(`http://localhost:8000/me?email=${encodeURIComponent(email)}`, {
+        setIsLoading(true); // Set loading before fetch
+        fetch(`http://localhost:8000/me`, {
             method: "GET",
             headers: {
                 "Content-Type": "application/json",
@@ -85,14 +92,29 @@ export default function Dashboard() {
             },
         })
             .then((res) => res.json())
-            .then((data) => setMyProfile(data));
+            .then((data) => {
+                setMyProfile(data);
+                setIsLoading(false);
+            });
     };
 
+    // const dispatch = useDispatch();
+    // useEffect(() => {
+    //     dispatch(fetchProfile());
+    // }, [dispatch]);
+
+    // Fetch profile on mount
     useEffect(() => {
         fetchProfile();
-        Cookies.set('userid', myProfile?.id)
-    }, [myProfile]);
+    }, []);
 
+    // Set cookie only when not loading and profile is available
+    useEffect(() => {
+        if (!isLoading && myProfile?.id) {
+            Cookies.set("userid", myProfile.id);
+            console.log(myProfile1);
+        }
+    }, [isLoading, myProfile1]);
 
     //Download users data as CSV by calling the backend API and the appropriate params
     const exportToCSV = ({ search, postFilter, sortField, sortOrder }) => {
@@ -122,7 +144,7 @@ export default function Dashboard() {
                 link.parentNode.removeChild(link);
             })
             .catch((error) => {
-                alert(error.message);
+                setError(error.message);
                 console.error(error);
             });
     };
@@ -170,7 +192,6 @@ export default function Dashboard() {
         setSelectedUsers(checked ? users.map((u) => u.id) : []);
     };
 
-
     // Handle delete user with confirmation
     const handleDeleteUser = (id) => {
         if (!window.confirm("Are you sure you want to delete this user?"))
@@ -197,21 +218,22 @@ export default function Dashboard() {
                 res.json().then((data) => ({ status: res.status, data }))
             )
             .then(({ status, data }) => {
-                alert(data.message || "Unknown response");
+                setError(data.message);
+                //alert(data.message || "Unknown response");
                 if (status === 200) {
                     setSelectedUsers([]);
                     fetchUsers();
                 }
             })
             .catch((err) => {
-                alert("Bulk delete failed.");
+                setError("Bulk delete failed.");
             });
     };
 
     // Handle bulk role change of selected users with confirmation
     const handleBulkRole = () => {
         if (!selectedRole) {
-            alert("Please select a role.");
+            setError("Please select a role.");
             return;
         }
         if (!window.confirm("Change Roles of selected Users?")) return;
@@ -229,19 +251,19 @@ export default function Dashboard() {
             )
             .then(({ status, data }) => {
                 if (status === 200) {
-                    alert(data.message || "Users role changed.");
+                    setError(data.message || "Users role changed.");
                     setSelectedUsers([]);
                     fetchUsers();
                 } else {
-                    alert(data.error || "Failed to change user roles.");
+                    setError(data.error || "Failed to change user roles.");
                 }
             })
             .catch((err) => {
-                alert("Bulk role assign failed. " + err.message);
+                setError("Bulk role assign failed. " + err.message);
             });
     };
 
-    //logout function 
+    //logout function
     const handleLogout = () => {
         fetch("http://localhost:8000/logout", {
             method: "POST",
@@ -267,21 +289,38 @@ export default function Dashboard() {
             <div>
                 <div
                     style={{
-                        marginBottom: 10,
+                        marginBottom: 16,
                         display: "flex",
-                        gap: 8,
                         flexWrap: "wrap",
+                        gap: 12,
+                        alignItems: "center",
+                        padding: 16,
+                        background: "#f6f8fa",
+                        borderRadius: 8,
+                        boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
                     }}
                 >
-                    {/* input for the different search parameters */}
+                    {/* Search and filter */}
                     <input
                         placeholder="Search name/email"
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
+                        style={{
+                            padding: "8px 12px",
+                            border: "1px solid #d1d5db",
+                            borderRadius: 6,
+                            minWidth: 180,
+                        }}
                     />
                     <select
                         value={postFilter}
                         onChange={(e) => setPostFilter(e.target.value)}
+                        style={{
+                            padding: "8px 12px",
+                            border: "1px solid #d1d5db",
+                            borderRadius: 6,
+                            background: "#fff",
+                        }}
                     >
                         <option value="">All Posts</option>
                         <option value="Master">Master</option>
@@ -289,16 +328,30 @@ export default function Dashboard() {
                         <option value="User">User</option>
                     </select>
 
+                    {/* Main actions */}
                     <button
-                        onClick={() => {
-                            setModalUserAdd({});
+                        onClick={() => setModalUserAdd({})}
+                        style={{
+                            background: "#2563eb",
+                            color: "#fff",
+                            padding: "8px 16px",
+                            border: "none",
+                            borderRadius: 6,
+                            fontWeight: 600,
+                            cursor: "pointer",
                         }}
                     >
                         Add User
                     </button>
                     <button
-                        onClick={() => {
-                            handleClearFilter();
+                        onClick={handleClearFilter}
+                        style={{
+                            padding: "8px 16px",
+                            border: "1px solid #e5e7eb",
+                            borderRadius: 6,
+                            background: "#fff",
+                            color: "#374151",
+                            cursor: "pointer",
                         }}
                     >
                         Clear Filter
@@ -312,14 +365,47 @@ export default function Dashboard() {
                                 sortOrder,
                             })
                         }
+                        style={{
+                            padding: "8px 16px",
+                            border: "1px solid #e5e7eb",
+                            borderRadius: 6,
+                            background: "#fff",
+                            color: "#2563eb",
+                            fontWeight: 500,
+                            cursor: "pointer",
+                        }}
                     >
                         Export CSV
                     </button>
+
+                    {/* Divider for bulk actions */}
                     {myProfile?.post !== "User" && selectedUsers.length > 0 && (
-                        <>
+                        <div
+                            style={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: 8,
+                                marginLeft: 16,
+                                paddingLeft: 16,
+                                borderLeft: "1px solid #e5e7eb",
+                            }}
+                        >
                             <button
                                 onClick={handleBulkDelete}
-                                style={{ color: "red" }}
+                                style={{
+                                    color: "#dc2626",
+                                    background: "#fff",
+                                    border: "1px solid #fca5a5",
+                                    padding: "8px 16px",
+                                    borderRadius: 6,
+                                    fontWeight: 500,
+                                    cursor:
+                                        myProfile?.post === "Master"
+                                            ? "pointer"
+                                            : "not-allowed",
+                                    opacity:
+                                        myProfile?.post === "Master" ? 1 : 0.5,
+                                }}
                                 disabled={myProfile?.post !== "Master"}
                             >
                                 Delete Selected
@@ -329,7 +415,12 @@ export default function Dashboard() {
                                 onChange={(e) =>
                                     setSelectedRole(e.target.value)
                                 }
-                                style={{ marginLeft: 8, marginRight: 8 }}
+                                style={{
+                                    padding: "8px 12px",
+                                    border: "1px solid #d1d5db",
+                                    borderRadius: 6,
+                                    background: "#fff",
+                                }}
                             >
                                 <option value="" disabled>
                                     Select Role
@@ -340,17 +431,33 @@ export default function Dashboard() {
                             </select>
                             <button
                                 onClick={handleBulkRole}
-                                style={{ color: "blue" }}
+                                style={{
+                                    color: "#2563eb",
+                                    background: "#fff",
+                                    border: "1px solid #93c5fd",
+                                    padding: "8px 16px",
+                                    borderRadius: 6,
+                                    fontWeight: 500,
+                                    cursor:
+                                        !!selectedRole &&
+                                        myProfile?.post !== "User"
+                                            ? "pointer"
+                                            : "not-allowed",
+                                    opacity:
+                                        !!selectedRole &&
+                                        myProfile?.post !== "User"
+                                            ? 1
+                                            : 0.5,
+                                }}
                                 disabled={
                                     !selectedRole || myProfile?.post === "User"
                                 }
                             >
                                 Change Role
                             </button>
-                        </>
+                        </div>
                     )}
                 </div>
-
 
                 {/* pagination control */}
                 <div
@@ -586,50 +693,49 @@ export default function Dashboard() {
                                 {myProfile?.post !== "User" && (
                                     <td>
                                         <button
-                                            style={{ marginRight: 4 }}
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                setModalUser(user);
-                                            }}
-                                            title={
-                                                user.deleted_by !== null
-                                                    ? "User no more available"
-                                                    : ""
-                                            }
-                                            disabled={
-                                                user.deleted_by !== null ||
-                                                myProfile?.post === "User"
-                                            }
-                                        >
-                                            {user.deleted_by !== null
-                                                ? "User Unavailable"
-                                                : myProfile?.post === "User"
-                                                ? "You can't Edit"
-                                                : "Edit"}
-                                        </button>
-                                        <button
-                                            style={{ color: "red" }}
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                handleDeleteUser(user.id);
-                                            }}
-                                            disabled={
-                                                user.deleted_by !== null ||
-                                                myProfile?.post !== "Master" ||
-                                                user.post === "Master" ||
-                                                user.id === myProfile.id
-                                            }
-                                        >
-                                            {user.id === myProfile.id
-                                                ? "Can't Delete Self"
-                                                : user.deleted_by !== null
-                                                ? "User Unavailable"
-                                                : myProfile?.post !== "Master"
-                                                ? "You can't Delete"
-                                                : user.post === "Master"
-                                                ? "Master can't be deleted"
-                                                : "Delete"}
-                                        </button>
+    className="user-action-btn edit-btn"
+    onClick={e => {
+        e.stopPropagation();
+        setModalUser(user);
+    }}
+    title={
+        user.deleted_by !== null
+            ? "User no more available"
+            : ""
+    }
+    disabled={
+        user.deleted_by !== null || myProfile?.post === "User"
+    }
+>
+    {user.deleted_by !== null
+        ? "User Unavailable"
+        : myProfile?.post === "User"
+        ? "You can't Edit"
+        : "Edit"}
+</button>
+<button
+    className="user-action-btn delete-btn"
+    onClick={e => {
+        e.stopPropagation();
+        handleDeleteUser(user.id);
+    }}
+    disabled={
+        user.deleted_by !== null ||
+        myProfile?.post !== "Master" ||
+        user.post === "Master" ||
+        user.id === myProfile.id
+    }
+>
+    {user.id === myProfile.id
+        ? "Can't Delete Self"
+        : user.deleted_by !== null
+        ? "User Unavailable"
+        : myProfile?.post !== "Master"
+        ? "You can't Delete"
+        : user.post === "Master"
+        ? "Master can't be deleted"
+        : "Delete"}
+</button>
                                     </td>
                                 )}
                             </tr>
@@ -727,7 +833,22 @@ export default function Dashboard() {
                         fetchUsers();
                     }}
                 />
+
+                <ErrorModal
+                    open={!!error}
+                    message={error}
+                    onClose={() => setError("")}
+                />
             </div>
         </div>
     );
 }
+
+export default connect(
+    (state) => {
+        return {
+            myProfile1: state.profile.myProfile,
+        };
+    },
+    { fetchProfile }
+)(Dashboard);

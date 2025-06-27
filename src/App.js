@@ -14,6 +14,10 @@ import Tasklisting from "./componentsTask/Tasklisting";
 import Sidebar from "./componentsTask/Sidebar";
 import AllTasks from "./componentsTask/AllTasks";
 import SidebarUser from "./components/Sidebar";
+import { useDispatch } from "react-redux";
+import { fetchProfile } from "./redux/profileActions";
+import { useSelector } from "react-redux";
+
 // import * as PusherPushNotifications from "@pusher/push-notifications-web";
 
 // Layout for pages with Sidebar
@@ -39,23 +43,29 @@ function SidebarLayoutUser() {
 }
 
 function App() {
-//     Notification.requestPermission().then(permission => {
-//             if (permission !== "granted") {
-//                 alert("Notifications are required for this feature.");
-//             }
-//         });
+    const dispatch = useDispatch();
+    useEffect(() => {
+        console.log("Fetching profile data...");
+        dispatch(fetchProfile());
+    }, [dispatch]);
 
-//     useEffect(() => {
-//         const beamsClient = new PusherPushNotifications.Client({
-//             instanceId: "13712aae-8078-4d6c-9ab9-9e45827c4ee0",
-//         });
+    //     Notification.requestPermission().then(permission => {
+    //             if (permission !== "granted") {
+    //                 alert("Notifications are required for this feature.");
+    //             }
+    //         });
 
-//         beamsClient
-//             .start()
-//             .then(() => beamsClient.addDeviceInterest("debug-apple"))
-//             .then(() => console.log("Successfully registered and subscribed!"))
-//             .catch(console.error);
-//     }, []);
+    //     useEffect(() => {
+    //         const beamsClient = new PusherPushNotifications.Client({
+    //             instanceId: "13712aae-8078-4d6c-9ab9-9e45827c4ee0",
+    //         });
+
+    //         beamsClient
+    //             .start()
+    //             .then(() => beamsClient.addDeviceInterest("debug-apple"))
+    //             .then(() => console.log("Successfully registered and subscribed!"))
+    //             .catch(console.error);
+    //     }, []);
 
     return (
         <div className="app-bg">

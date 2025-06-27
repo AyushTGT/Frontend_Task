@@ -4,8 +4,9 @@ import "../components/Dashboard.css";
 import axios from "axios";
 import Header from "./Header";
 import { useNavigate } from "react-router-dom";
-import AddTaskModal from "./AddTaskModal";
-import TaskDetailModal from "./TaskDetailModal";
+import AddTaskModal from "../modals/AddTaskModal";
+import TaskDetailModal from "../modals/TaskDetailModal";
+import ErrorModal from "../modals/ErrorModal";
 
 //task page listing same as user listing with search paramters and filters
 
@@ -32,6 +33,7 @@ export default function AllTasks() {
     const token = Cookies.get("jwt_token");
     const searchTimeout = useRef(null);
     const [addTaskOpen, setAddTaskOpen] = useState(false);
+    const [error, setError] = useState("");
 
     // New states for dropdown filters
     const [reporterOptions, setReporterOptions] = useState([]);
@@ -91,7 +93,7 @@ export default function AllTasks() {
         })
             .then((res) => {
                 if (res.status === 401) {
-                    alert("Session expired. Please log in again.");
+                    setError("Session expired. Please log in again.");
                     window.location.href = "/login";
                     return;
                 }
@@ -100,7 +102,7 @@ export default function AllTasks() {
             .then((data) => {
                 if (!data) return;
                 setUsers(data.tasks || []);
-                console.log(users);
+                //console.log(users);
                 setPagination({
                     page: data.current_page,
                     per_page: data.per_page,
@@ -112,8 +114,7 @@ export default function AllTasks() {
 
     // Profile fetch (unchanged)
     const fetchProfile = () => {
-        const email = Cookies.get("email");
-        fetch(`http://localhost:8000/me?email=${encodeURIComponent(email)}`, {
+        fetch(`http://localhost:8000/me`, {
             method: "GET",
             headers: {
                 "Content-Type": "application/json",
@@ -122,7 +123,7 @@ export default function AllTasks() {
         })
             .then((res) => {
                 if (res.status === 401) {
-                    alert("Session ended. Please log in again.");
+                    setError("Session ended. Please log in again.");
                     window.location.href = "/login";
                     return null;
                 }
@@ -230,7 +231,7 @@ export default function AllTasks() {
             setTaskDetailOpen(false);
             fetchUsers();
         } catch (err) {
-            alert(
+            setError(
                 "Error updating task: " +
                     (err.response?.data?.message || err.message)
             );
@@ -546,8 +547,8 @@ export default function AllTasks() {
                             fetchUsers();
                             //resetForm(); // Call resetForm if provided
                         } catch (err) {
-                            console.error("Error adding task:", err);
-                            alert(
+                            //console.error("Error adding task:", err);
+                            setError(
                                 "Error adding task: " +
                                     (err.response?.data?.message || err.message)
                             );
@@ -574,6 +575,12 @@ export default function AllTasks() {
                         }
                     }}
                 /> */}
+
+                <ErrorModal
+                    open={!!error}
+                    message={error}
+                    onClose={() => setError("")}
+                />
 
                 <TaskDetailModal
                     open={taskDetailOpen}

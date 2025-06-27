@@ -21,6 +21,7 @@ import {
     thisMonth,
 } from "../apis/taskapis";
 import NotificationBell from "./Notification";
+import axios from "axios";
 
 ChartJS.register(
     CategoryScale,
@@ -33,6 +34,7 @@ ChartJS.register(
     PointElement,
     LineElement
 );
+
 
 // Dashboardtask component to display task metrics and charts
 
@@ -49,6 +51,8 @@ export default function Dashboardtask() {
     const [error, setError] = useState(null);
     const [user, setUser] = useState(null);
     const [userError, setUserError] = useState(null);
+    const [allUser, setAllUser] = useState([]);
+    const [selectedAssignee, setSelectedAssignee] = useState(null);
 
     useEffect(() => {
         async function fetchUser() {
@@ -61,6 +65,9 @@ export default function Dashboardtask() {
         }
         fetchUser();
     }, []);
+
+    const assigneeObj = selectedAssignee ? { assignee: selectedAssignee } : {};
+
 
     useEffect(() => {
         async function getMetrics() {
@@ -76,13 +83,13 @@ export default function Dashboardtask() {
                     completedThisMonth,
                     dueToday,
                 ] = await Promise.all([
-                    fetchTaskCount({ status: "completed" }),
-                    fetchTaskCount({ status: "pending" }),
-                    fetchTaskCount(),
-                    overDue(),
-                    thisMonth(),
+                    fetchTaskCount({ status: "completed", ...assigneeObj }),
+                    fetchTaskCount({ status: "pending", ...assigneeObj }),
+                    fetchTaskCount({ ...assigneeObj }),
+                    overDue({ ...assigneeObj }),
+                    thisMonth({ ...assigneeObj }),
                     fetchTaskCount({
-                        due_date: new Date().toISOString().slice(0, 10),
+                        due_date: new Date().toISOString().slice(0, 10), ...assigneeObj
                     }),
                 ]);
 
@@ -105,7 +112,7 @@ export default function Dashboardtask() {
         }
 
         getMetrics();
-    }, []);
+    }, [selectedAssignee]);
 
     const [tasksPerDayData, setTasksPerDayData] = useState({
         labels: Array.from({ length: 7 }, (_, i) => {
@@ -125,9 +132,12 @@ export default function Dashboardtask() {
     useEffect(() => {
         async function fetchTasksPerDay() {
             try {
-                const response = await fetch(
-                    "http://localhost:8000/completedTasks"
-                );
+                let url = "http://localhost:8000/completedTasks";
+                const params = new URLSearchParams(assigneeObj).toString();
+                if (params) {
+                    url += `?${params}`;
+                }
+                const response = await fetch(url);
                 const result = await response.json();
                 setTasksPerDayData((prev) => ({
                     ...prev,
@@ -143,7 +153,11 @@ export default function Dashboardtask() {
             }
         }
         fetchTasksPerDay();
-    }, []);
+    }, [selectedAssignee]);
+
+    const handleAssigneeChange = (e) => {
+        setSelectedAssignee(e.target.value);
+    };
 
     const overdueTasksData = {
         labels: ["Overdue", "On Time"],
@@ -178,7 +192,12 @@ export default function Dashboardtask() {
     useEffect(() => {
         async function fetchTasksCreatedVsCompleted() {
             try {
-                const response = await fetch("http://localhost:8000/byMonths");
+               let url = "http://localhost:8000/byMonths";
+                const params = new URLSearchParams(assigneeObj).toString();
+                if (params) {
+                    url += `?${params}`;
+                }
+                const response = await fetch(url);
                 const result = await response.json();
                 setTasksCreated(result.created || Array(12).fill(0));
                 setTasksCompleted(result.completed || Array(12).fill(0));
@@ -191,6 +210,17 @@ export default function Dashboardtask() {
         }
         fetchTasksCreatedVsCompleted();
     }, []);
+
+    useEffect(() => {
+            axios
+                .get("http://localhost:8000/userName", {
+                    // headers: { Authorization: `Bearer ${token}` },
+                })
+                .then((res) => {
+                    setAllUser(res.data);
+                })
+                .catch(() => {});
+        }, []);
 
     const tasksCreatedVsCompletedData = {
         labels: months,
@@ -218,6 +248,31 @@ export default function Dashboardtask() {
         <div style={{ flex: 1, background: "#f5f6fa", padding: "24px" }}>
             <Header user={user} />
             <NotificationBell assigneeId={user?.id} />
+
+            { user?.post === "Master" && (
+                <div style={{ margin: "16px 0" }}>
+                    <label>
+                        Select User:&nbsp;
+                        <select
+                            value={selectedAssignee}
+                            onChange={handleAssigneeChange}
+                            style={{
+                                padding: "8px",
+                                borderRadius: "4px",
+                                border: "1px solid #ccc",
+                                minWidth: "160px",
+                            }}
+                        >
+                            <option value="">All</option>
+                            {allUser.map((u) => (
+                                <option key={u.id} value={u.id}>
+                                    {u.name}
+                                </option>
+                            ))}
+                        </select>
+                    </label>
+                </div>
+            )} 
 
             {loading ? (
                 <div>Loading metrics...</div>

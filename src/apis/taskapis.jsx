@@ -20,6 +20,24 @@ export async function fetchTaskCount(params = {}) {
     return data.count;
 }
 
+export async function overDue(params = {}) {
+    const token = Cookies.get("jwt_token");
+
+    const query = new URLSearchParams(params).toString();
+    const url = `${BASE_URL}/overdueTasks${query ? `?${query}` : ""}`;
+    //const url = `${BASE_URL}/overdueTasks`;
+
+    const response = await fetch(url, {
+        headers: {
+            Accept: "application/json",
+            Authorization: `Bearer ${token}`,
+        },
+    });
+    if (!response.ok) throw new Error("Failed to fetch overdue tasks");
+    const data = await response.json();
+    return data.count;
+}  
+
 export async function userDetails() {
     // Build query string from params object
     const token = Cookies.get("jwt_token");
@@ -41,24 +59,27 @@ export async function userDetails() {
     return data;
 }
 
-export async function overDue() {
-    const token = Cookies.get("jwt_token");
-    const url = `${BASE_URL}/overdueTasks`;
+// export async function overDue() {
+//     const token = Cookies.get("jwt_token");
+//     const url = `${BASE_URL}/overdueTasks`;
 
-    const response = await fetch(url, {
-        headers: {
-            Accept: "application/json",
-            Authorization: `Bearer ${token}`,
-        },
-    });
-    if (!response.ok) throw new Error("Failed to fetch overdue tasks");
-    const data = await response.json();
-    return data.count;
-}   
+//     const response = await fetch(url, {
+//         headers: {
+//             Accept: "application/json",
+//             Authorization: `Bearer ${token}`,
+//         },
+//     });
+//     if (!response.ok) throw new Error("Failed to fetch overdue tasks");
+//     const data = await response.json();
+//     return data.count;
+// }   
 
-export async function thisMonth() {
+export async function thisMonth(params = {}) {
     const token = Cookies.get("jwt_token");
-    const url = `${BASE_URL}/taskCompletedThisMonth`;
+
+    const query = new URLSearchParams(params).toString();
+    const url = `${BASE_URL}/taskCompletedThisMonth${query ? `?${query}` : ""}`;
+    //const url = `${BASE_URL}/taskCompletedThisMonth`;
 
     const response = await fetch(url, {
         headers: {

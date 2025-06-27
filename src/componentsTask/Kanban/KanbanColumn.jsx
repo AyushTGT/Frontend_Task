@@ -1,5 +1,5 @@
 import { useDroppable } from "@dnd-kit/core";
-import "./Dashboard.css";
+import "../Dashboard.css";
 
 export function KanbanColumn({
     children,
