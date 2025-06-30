@@ -36,8 +36,8 @@ A robust and secure User & Task Management tool built in JavaScript using the Re
   List with filtering, add and delete user functionality.
 - **Task Listing Page:**  
   List with filtering, add and delete task functionality.
-- **Profile Header:**  
-  User profile and navigation buttons.
+- **Profile Header & SideBar:**  
+  User profile and navigation through Sidebar.
 - **Kanban Board:**  
   Drag-and-drop for dynamic task management.
 
@@ -48,7 +48,6 @@ A robust and secure User & Task Management tool built in JavaScript using the Re
 - `@ant-design/icons: ^6.0.0`
 - `@dnd-kit/core: ^6.3.1`
 - `@pusher/push-notifications-web: ^1.1.0`
-- `@reduxjs/toolkit: ^2.8.2`
 - `chart.js: ^4.5.0`
 - `pusher-js: ^8.4.0`
 - `react: ^19.1.0`
