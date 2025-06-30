@@ -1,70 +1,89 @@
-# Getting Started with Create React App
+# User & Task Management System (Frontend)
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+A robust and secure User & Task Management tool built in JavaScript using the ReactJS framework. This application allows efficient management of users and tasks, with real-time notifications via Pusher.
 
-## Available Scripts
+---
 
-In the project directory, you can run:
+## Features
 
-### `npm start`
+- **User Management:**  
+  Create, update, delete, and filter users. Export user details as CSV.
+- **Task Management:**  
+  Assign, update, and track tasks for each user. Retrieve task metrics.
+- **Real-Time Notifications:**  
+  Live updates using [Pusher](https://pusher.com/).
+- **Kanban Board:**  
+  Dynamic shifting and visualization of task cards.
+- **Charts & Metrics:**  
+  Dashboard with metrics and graphs using [react-chartjs-2](https://github.com/reactchartjs/react-chartjs-2).
+- **Authentication:**  
+  Login, register, forget password, and reset password pages.
+- **Modal & Error Handling:**  
+  Modals for adding/editing details and showing errors.
+- **State Management:**  
+  Uses Redux and Redux Form.
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+---
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+## Pages
 
-### `npm test`
+- **Login Page**
+- **Register Page**
+- **Forgot/Reset Password**
+- **Dashboard:**  
+  First landing page with metrics and graphs.
+- **User Listing Page:**  
+  List with filtering, add and delete user functionality.
+- **Task Listing Page:**  
+  List with filtering, add and delete task functionality.
+- **Profile Header:**  
+  User profile and navigation buttons.
+- **Kanban Board:**  
+  Drag-and-drop for dynamic task management.
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+---
 
-### `npm run build`
+## Dependencies
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+- `@ant-design/icons: ^6.0.0`
+- `@dnd-kit/core: ^6.3.1`
+- `@pusher/push-notifications-web: ^1.1.0`
+- `@reduxjs/toolkit: ^2.8.2`
+- `chart.js: ^4.5.0`
+- `pusher-js: ^8.4.0`
+- `react: ^19.1.0`
+- `react-chartjs-2: ^5.3.0`
+- `react-dom: ^19.1.0`
+- `react-redux: ^9.2.0`
+- `react-router-dom: ^7.6.2`
+- `redux: ^5.0.1`
+- `redux-form: ^8.3.10`
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+---
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+## Getting Started
 
-### `npm run eject`
+1. **Clone the Repository**
+    ```sh
+    git clone https://github.com/your-username/your-repo.git
+    cd your-repo
+    ```
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+2. **Install Dependencies**
+    ```sh
+    npm install
+    ```
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+3. **Environment Setup**
+    - Copy `.env.example` to `.env` (if available) and update environment variables as needed.
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+4. **Run the Application**
+    ```sh
+    npm start
+    ```
+    - The app will open at [http://localhost:3000](http://localhost:3000).
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+5. **Build for Production**
+    ```sh
+    npm run build
+    ```
