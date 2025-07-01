@@ -110,12 +110,12 @@
   cursor: not-allowed;
 }
 
-@media (max-width: 480px) {
+/* @media (max-width: 480px) {
   .registration-form {
     max-width: 97vw;
     padding: 20px 5vw 16px 5vw;
   }
-}
+} */
 
 .spinner {
   border: 4px solid #f3f3f3; /* Light grey */

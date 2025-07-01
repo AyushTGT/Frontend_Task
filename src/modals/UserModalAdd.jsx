@@ -83,7 +83,7 @@ function UserModalAdd({ user, onClose, onSave }) {
     return (
         <div className="modal-backdrop" onClick={onClose}>
             <div className="modal" onClick={(e) => e.stopPropagation()}>
-                <h3>Add new User</h3>
+                <h3>Add User</h3>
                 <form onSubmit={handleSubmit}>
                     <div>
                         <label>Name: </label>

@@ -10,6 +10,7 @@ import { useDispatch } from "react-redux";
 import { connect } from "react-redux";
 import { fetchProfile } from "../redux/profileActions";
 import ErrorModal from "../modals/ErrorModal.jsx";
+import { getUsers, getProfile } from "../apis/userapis.jsx";
 
 function Dashboard({ myProfile1 }) {
     console.log({ myProfile1 });
@@ -42,33 +43,14 @@ function Dashboard({ myProfile1 }) {
         page = pagination.page,
         per_page = pagination.per_page,
     } = {}) {
-        const rparams = {
+        getUsers({
             search,
             sort: sortField,
             order: sortOrder,
             per_page,
             post: postFilter,
             page,
-        };
-        const filteredParams = Object.fromEntries(
-            Object.entries(rparams).filter(
-                ([_, v]) => v !== undefined && v !== null && v !== ""
-            )
-        );
-
-        const params = new URLSearchParams(filteredParams);
-
-        fetch(`http://localhost:8000/getUsers?${params.toString()}`, {
-            headers: { Authorization: `Bearer ${token}` },
         })
-            .then((res) => {
-                if (res.status === 401) {
-                    setError("Session expired. Please log in again.");
-                    window.location.href = "/login";
-                    return;
-                }
-                return res.json();
-            })
             .then((data) => {
                 if (!data) return;
                 setUsers(data.data || []);
@@ -78,24 +60,29 @@ function Dashboard({ myProfile1 }) {
                     total: data.total,
                     last_page: data.last_page,
                 });
+            })
+            .catch((error) => {
+                //In case jwt token is expired or any other error
+                if (error.message === "SessionExpired") {
+                    setError("Session expired. Please log in again.");
+                    window.location.href = "/login";
+                } else {
+                    setError("An error occurred while fetching users.");
+                }
             });
     }
 
     // Fetching the profile of the logged-in user
-    const fetchProfile = () => {
-        setIsLoading(true); // Set loading before fetch
-        fetch(`http://localhost:8000/me`, {
-            method: "GET",
-            headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${token}`,
-            },
-        })
-            .then((res) => res.json())
-            .then((data) => {
-                setMyProfile(data);
-                setIsLoading(false);
-            });
+    const fetchProfile = async () => {
+        setIsLoading(true);
+        try {
+            const data = await getProfile(token);
+            setMyProfile(data);
+        } catch (error) {
+            setError("Could not load profile.");
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     // const dispatch = useDispatch();
@@ -160,6 +147,7 @@ function Dashboard({ myProfile1 }) {
         return () => clearTimeout(searchTimeout.current);
     }, [search]);
 
+    // Fetch users whenever filters, sorting, or pagination changes
     useEffect(() => {
         fetchUsers();
     }, [
@@ -180,7 +168,7 @@ function Dashboard({ myProfile1 }) {
         }
     };
 
-    // Handle selecting a user
+    // Handle selecting or unselect a user using the checkbox
     const handleSelectUser = (id) => {
         setSelectedUsers((prev) =>
             prev.includes(id) ? prev.filter((uid) => uid !== id) : [...prev, id]
@@ -189,7 +177,14 @@ function Dashboard({ myProfile1 }) {
 
     // Handle selecting all users
     const handleSelectAll = (checked) => {
-        setSelectedUsers(checked ? users.map((u) => u.id) : []);
+        //setSelectedUsers(checked ? users.map((u) => u.id) : []);
+        setSelectedUsers(
+        checked
+            ? users
+                .filter((u) => u.deleted_by === null) // Only include users not deleted
+                .map((u) => u.id)
+            : []
+    );
     };
 
     // Handle delete user with confirmation
@@ -251,7 +246,7 @@ function Dashboard({ myProfile1 }) {
             )
             .then(({ status, data }) => {
                 if (status === 200) {
-                    setError(data.message || "Users role changed.");
+                    // setError(data.message || "Users role changed.");
                     setSelectedUsers([]);
                     fetchUsers();
                 } else {
@@ -274,6 +269,7 @@ function Dashboard({ myProfile1 }) {
         });
     };
 
+    // Handle clearing all filters and resetting state
     const handleClearFilter = () => {
         setSearch("");
         setPostFilter("");
@@ -284,43 +280,23 @@ function Dashboard({ myProfile1 }) {
     };
 
     return (
-        <div style={{ flex: 1, background: "#f5f6fa", padding: "24px" }}>
+        <div style={{ flex: 1, background: "#f5f6fa", padding: "24px" }} >
             <Header user={myProfile} />
             <div>
                 <div
-                    style={{
-                        marginBottom: 16,
-                        display: "flex",
-                        flexWrap: "wrap",
-                        gap: 12,
-                        alignItems: "center",
-                        padding: 16,
-                        background: "#f6f8fa",
-                        borderRadius: 8,
-                        boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
-                    }}
+                    class="filters-container"
                 >
                     {/* Search and filter */}
                     <input
                         placeholder="Search name/email"
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
-                        style={{
-                            padding: "8px 12px",
-                            border: "1px solid #d1d5db",
-                            borderRadius: 6,
-                            minWidth: 180,
-                        }}
+                        class="search-input"
                     />
                     <select
                         value={postFilter}
                         onChange={(e) => setPostFilter(e.target.value)}
-                        style={{
-                            padding: "8px 12px",
-                            border: "1px solid #d1d5db",
-                            borderRadius: 6,
-                            background: "#fff",
-                        }}
+                        class="select-input"
                     >
                         <option value="">All Posts</option>
                         <option value="Master">Master</option>
@@ -329,30 +305,19 @@ function Dashboard({ myProfile1 }) {
                     </select>
 
                     {/* Main actions */}
+                    
                     <button
                         onClick={() => setModalUserAdd({})}
-                        style={{
-                            background: "#2563eb",
-                            color: "#fff",
-                            padding: "8px 16px",
-                            border: "none",
-                            borderRadius: 6,
-                            fontWeight: 600,
-                            cursor: "pointer",
-                        }}
+                        class="add-user-btn"
+                        disabled={ myProfile?.post === "User" }
+                       
                     >
                         Add User
                     </button>
+
                     <button
                         onClick={handleClearFilter}
-                        style={{
-                            padding: "8px 16px",
-                            border: "1px solid #e5e7eb",
-                            borderRadius: 6,
-                            background: "#fff",
-                            color: "#374151",
-                            cursor: "pointer",
-                        }}
+                        class="clear-filter-btn"
                     >
                         Clear Filter
                     </button>
@@ -365,15 +330,7 @@ function Dashboard({ myProfile1 }) {
                                 sortOrder,
                             })
                         }
-                        style={{
-                            padding: "8px 16px",
-                            border: "1px solid #e5e7eb",
-                            borderRadius: 6,
-                            background: "#fff",
-                            color: "#2563eb",
-                            fontWeight: 500,
-                            cursor: "pointer",
-                        }}
+                        class="export-csv-btn"
                     >
                         Export CSV
                     </button>
@@ -381,31 +338,11 @@ function Dashboard({ myProfile1 }) {
                     {/* Divider for bulk actions */}
                     {myProfile?.post !== "User" && selectedUsers.length > 0 && (
                         <div
-                            style={{
-                                display: "flex",
-                                alignItems: "center",
-                                gap: 8,
-                                marginLeft: 16,
-                                paddingLeft: 16,
-                                borderLeft: "1px solid #e5e7eb",
-                            }}
+                            class="btn-container"
                         >
                             <button
                                 onClick={handleBulkDelete}
-                                style={{
-                                    color: "#dc2626",
-                                    background: "#fff",
-                                    border: "1px solid #fca5a5",
-                                    padding: "8px 16px",
-                                    borderRadius: 6,
-                                    fontWeight: 500,
-                                    cursor:
-                                        myProfile?.post === "Master"
-                                            ? "pointer"
-                                            : "not-allowed",
-                                    opacity:
-                                        myProfile?.post === "Master" ? 1 : 0.5,
-                                }}
+                                class="bulk-delete-btn"
                                 disabled={myProfile?.post !== "Master"}
                             >
                                 Delete Selected
@@ -415,12 +352,7 @@ function Dashboard({ myProfile1 }) {
                                 onChange={(e) =>
                                     setSelectedRole(e.target.value)
                                 }
-                                style={{
-                                    padding: "8px 12px",
-                                    border: "1px solid #d1d5db",
-                                    borderRadius: 6,
-                                    background: "#fff",
-                                }}
+                                class="select-input"
                             >
                                 <option value="" disabled>
                                     Select Role
@@ -431,24 +363,7 @@ function Dashboard({ myProfile1 }) {
                             </select>
                             <button
                                 onClick={handleBulkRole}
-                                style={{
-                                    color: "#2563eb",
-                                    background: "#fff",
-                                    border: "1px solid #93c5fd",
-                                    padding: "8px 16px",
-                                    borderRadius: 6,
-                                    fontWeight: 500,
-                                    cursor:
-                                        !!selectedRole &&
-                                        myProfile?.post !== "User"
-                                            ? "pointer"
-                                            : "not-allowed",
-                                    opacity:
-                                        !!selectedRole &&
-                                        myProfile?.post !== "User"
-                                            ? 1
-                                            : 0.5,
-                                }}
+                                class="export-csv-btn"
                                 disabled={
                                     !selectedRole || myProfile?.post === "User"
                                 }
@@ -461,13 +376,7 @@ function Dashboard({ myProfile1 }) {
 
                 {/* pagination control */}
                 <div
-                    style={{
-                        marginLeft: "150px",
-                        margin: "10px 0",
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "8px",
-                    }}
+                    class="users-pagination"
                 >
                     <button
                         onClick={() =>
@@ -551,19 +460,16 @@ function Dashboard({ myProfile1 }) {
                 </div>
 
                 <table
-                    border="1"
-                    cellPadding="8"
-                    style={{ width: "100%", borderCollapse: "collapse" }}
+                    border="1px solid black"
+                    class="users-table"
                 >
                     <thead>
                         <tr>
                             <th hidden={myProfile?.post === "User"}>
                                 <input
                                     type="checkbox"
-                                    checked={
-                                        selectedUsers.length === users.length &&
-                                        users.length > 0
-                                    }
+                                    checked={selectedUsers.length === users.filter(u => u.deleted_by === null).length}
+
                                     onChange={(e) =>
                                         handleSelectAll(e.target.checked)
                                     }
@@ -693,49 +599,50 @@ function Dashboard({ myProfile1 }) {
                                 {myProfile?.post !== "User" && (
                                     <td>
                                         <button
-    className="user-action-btn edit-btn"
-    onClick={e => {
-        e.stopPropagation();
-        setModalUser(user);
-    }}
-    title={
-        user.deleted_by !== null
-            ? "User no more available"
-            : ""
-    }
-    disabled={
-        user.deleted_by !== null || myProfile?.post === "User"
-    }
->
-    {user.deleted_by !== null
-        ? "User Unavailable"
-        : myProfile?.post === "User"
-        ? "You can't Edit"
-        : "Edit"}
-</button>
-<button
-    className="user-action-btn delete-btn"
-    onClick={e => {
-        e.stopPropagation();
-        handleDeleteUser(user.id);
-    }}
-    disabled={
-        user.deleted_by !== null ||
-        myProfile?.post !== "Master" ||
-        user.post === "Master" ||
-        user.id === myProfile.id
-    }
->
-    {user.id === myProfile.id
-        ? "Can't Delete Self"
-        : user.deleted_by !== null
-        ? "User Unavailable"
-        : myProfile?.post !== "Master"
-        ? "You can't Delete"
-        : user.post === "Master"
-        ? "Master can't be deleted"
-        : "Delete"}
-</button>
+                                            className="user-action-btn edit-btn"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                setModalUser(user);
+                                            }}
+                                            title={
+                                                user.deleted_by !== null
+                                                    ? "User no more available"
+                                                    : ""
+                                            }
+                                            disabled={
+                                                user.deleted_by !== null ||
+                                                myProfile?.post === "User"
+                                            }
+                                        >
+                                            {user.deleted_by !== null
+                                                ? "User Unavailable"
+                                                : myProfile?.post === "User"
+                                                ? "You can't Edit"
+                                                : "Edit"}
+                                        </button>
+                                        <button
+                                            className="user-action-btn delete-btn"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                handleDeleteUser(user.id);
+                                            }}
+                                            disabled={
+                                                user.deleted_by !== null ||
+                                                myProfile?.post !== "Master" ||
+                                                user.post === "Master" ||
+                                                user.id === myProfile.id
+                                            }
+                                        >
+                                            {user.id === myProfile.id
+                                                ? "Can't Delete Self"
+                                                : user.deleted_by !== null
+                                                ? "User Unavailable"
+                                                : myProfile?.post !== "Master"
+                                                ? "You can't Delete"
+                                                : user.post === "Master"
+                                                ? "Master can't be deleted"
+                                                : "Delete"}
+                                        </button>
                                     </td>
                                 )}
                             </tr>
@@ -743,77 +650,7 @@ function Dashboard({ myProfile1 }) {
                     </tbody>
                 </table>
 
-                {/* Modal */}
-
-                {profileModal && myProfile && (
-                    <div
-                        className="modal-backdrop"
-                        onClick={() => setProfileModal(false)}
-                    >
-                        <div
-                            className="modal"
-                            onClick={(e) => e.stopPropagation()}
-                        >
-                            <h3>My Profile</h3>
-                            <table>
-                                <tbody>
-                                    <tr>
-                                        <td>
-                                            <strong>Name:</strong>
-                                        </td>
-                                        <td>{myProfile.name}</td>
-                                    </tr>
-                                    <tr>
-                                        <td>
-                                            <strong>Email:</strong>
-                                        </td>
-                                        <td>{myProfile.email}</td>
-                                    </tr>
-                                    <tr>
-                                        <td>
-                                            <strong>Role:</strong>
-                                        </td>
-                                        <td>{myProfile.post}</td>
-                                    </tr>
-                                    <tr>
-                                        <td>
-                                            <strong>Created at:</strong>
-                                        </td>
-                                        <td>{myProfile.created_at}</td>
-                                    </tr>
-                                    <tr>
-                                        <td>
-                                            <strong>Email Verified:</strong>
-                                        </td>
-                                        <td>
-                                            {myProfile.verification_token ===
-                                            null
-                                                ? "Yes"
-                                                : "No"}
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>
-                                            <strong>Total duration:</strong>
-                                        </td>
-                                        <td>
-                                            {myProfile.total_duration_loggedin}
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                            <button
-                                onClick={handleLogout}
-                                style={{ color: "red" }}
-                            >
-                                Logout
-                            </button>
-                            <button onClick={() => setProfileModal(false)}>
-                                Close
-                            </button>
-                        </div>
-                    </div>
-                )}
+                {/* Modal */}             
 
                 <UserModal
                     myProfile={myProfile}

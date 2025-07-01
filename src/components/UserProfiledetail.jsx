@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import Cookies from "js-cookie";
+import { UserOutlined } from "@ant-design/icons";
 
 //Modal for showing the user profile details
 // with logout and account deactivsation options
@@ -115,7 +116,7 @@ export default function ProfileButton() {
         <div style={{ position: "relative", display: "inline-block" }}>
             <button style={buttonStyle} onClick={fetchUser} disabled={loading}>
                 <span role="img" aria-label="profile">
-                    👤
+                    <UserOutlined />
                 </span>
             </button>
             {error && (
@@ -156,7 +157,6 @@ export default function ProfileButton() {
                     >
                         Deactivate Account
                     </button>
-                    {/* <button onClick={handleLogout}>Edit Profile</button> */}
                 </div>
             )}
         </div>

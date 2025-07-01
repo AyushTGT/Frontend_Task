@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import Cookies from "js-cookie";
-import "../components/Dashboard.css"; // Assuming you have a CSS file for styles
+import "../components/Dashboard.css";
 
 const roleOptions = ["User", "Admin", "Master"];
 
@@ -24,7 +24,6 @@ function UserModal({ myProfile, user, onClose, onSave }) {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        // Call your PUT API here to update the user
         fetch(`http://localhost:8000/updateUser/${user.id}`, {
             method: "PUT",
             headers: {
@@ -34,16 +33,16 @@ function UserModal({ myProfile, user, onClose, onSave }) {
             body: JSON.stringify(form),
         })
             .then(async (res) => {
-            const data = await res.json();
-            if (!res.ok) {
-                alert(data.error || "An error occurred while updating the user.");
-                return;
-            }
-            onSave(data); 
-        })
-        .catch((err) => {
-            alert("Network error: " + err.message);
-        });
+                const data = await res.json();
+                if (!res.ok) {
+                    alert(data.error || "An error occurred while updating the user.");
+                    return;
+                }
+                onSave(data);
+            })
+            .catch((err) => {
+                alert("Network error: " + err.message);
+            });
     };
 
     return (
@@ -52,34 +51,34 @@ function UserModal({ myProfile, user, onClose, onSave }) {
                 <h3>Edit User Details</h3>
                 <form onSubmit={handleSubmit}>
                     <div>
-                        <label>ID: </label>
+                        <label>ID:</label>
                         <input type="text" value={form.id} disabled />
                     </div>
                     <div>
-                        <label>Name: </label>
+                        <label>Name:</label>
                         <input
                             name="name"
                             value={form.name || ""}
                             onChange={handleChange}
-                            disabled={myProfile?.post === "User" }
+                            disabled={myProfile?.post === "User"}
                         />
                     </div>
                     <div>
-                        <label>Email: </label>
+                        <label>Email:</label>
                         <input
                             name="email"
                             value={form.email || ""}
                             onChange={handleChange}
-                            disabled={myProfile?.post === "User" }
+                            disabled={myProfile?.post === "User"}
                         />
                     </div>
                     <div>
-                        <label>Role: </label>
+                        <label>Role:</label>
                         <select
                             name="post"
                             value={form.post || roleOptions[0]}
                             onChange={handleChange}
-                            disabled={myProfile?.post === "User" }
+                            disabled={myProfile?.post === "User"}
                         >
                             {roleOptions.map((role) => (
                                 <option key={role} value={role}>
@@ -88,8 +87,10 @@ function UserModal({ myProfile, user, onClose, onSave }) {
                             ))}
                         </select>
                     </div>
-                    <div style={{ marginTop: "1em" }}>
-                        <button type="submit" hidden={myProfile?.post==="User"}>Save Changes</button>
+                    <div style={{ marginTop: "1em", display: "flex", justifyContent: "flex-end" }}>
+                        <button type="submit" hidden={myProfile?.post === "User"}>
+                            Save Changes
+                        </button>
                         <button
                             type="button"
                             onClick={onClose}

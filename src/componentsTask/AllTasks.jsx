@@ -240,24 +240,24 @@ export default function AllTasks() {
 
     // UI
     return (
-        <div style={{ flex: 1, background: "#f5f6fa", padding: "24px" }}>
+        <div 
+            
+            style={{ flex: 1, background: "#f5f6fa", padding: "24px" }}
+        >
             <Header user={myProfile} />
             <div>
                 <div
-                    style={{
-                        marginBottom: 10,
-                        display: "flex",
-                        gap: 8,
-                        flexWrap: "wrap",
-                    }}
+                    class="filters-container"
                 >
                     <input
                         placeholder="Search task"
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
+                        class="search-input"
                     />
                     <select
                         value={reporterFilter}
+                        class="select-input"
                         onChange={(e) => setReporterFilter(e.target.value)}
                     >
                         <option value="">All Reporters</option>
@@ -269,6 +269,7 @@ export default function AllTasks() {
                     </select>
                     <select
                         value={assignedByFilter}
+                        class="select-input"
                         onChange={(e) => setAssignedByFilter(e.target.value)}
                     >
                         <option value="">All Assigned By</option>
@@ -280,6 +281,7 @@ export default function AllTasks() {
                     </select>
                     <select
                         value={selectedStatus}
+                        class="select-input"
                         onChange={(e) => setSelectedStatus(e.target.value)}
                     >
                         <option value="">All Status</option>
@@ -290,6 +292,7 @@ export default function AllTasks() {
                     </select>
                     <select
                         value={selectedPriority}
+                        class="select-input"
                         onChange={(e) => setSelectedPriority(e.target.value)}
                     >
                         <option value="">All Priority</option>
@@ -299,6 +302,7 @@ export default function AllTasks() {
                     </select>
                     <select
                         value={assigneeFilter}
+                        class="select-input"
                         onChange={(e) => setAssigneeFilter(e.target.value)}
                     >
                         <option value="">All Assignees</option>
@@ -312,6 +316,7 @@ export default function AllTasks() {
                     <input
                         type="date"
                         value={dueDateStart}
+                        class="search-input"
                         onChange={(e) => setDueDateStart(e.target.value)}
                         placeholder="Due date start"
                         style={{ minWidth: 120 }}
@@ -319,25 +324,20 @@ export default function AllTasks() {
                     <input
                         type="date"
                         value={dueDateEnd}
+                        class="search-input"
                         onChange={(e) => setDueDateEnd(e.target.value)}
                         placeholder="Due date end"
                         style={{ minWidth: 120 }}
                     />
 
-                    <button onClick={() => setAddTaskOpen(true)}>
+                    <button class="add-user-btn" onClick={() => setAddTaskOpen(true)}>
                         Add Task
                     </button>
-                    <button onClick={handleClearFilter}>Clear Filter</button>
+                    <button class="clear-filter-btn" onClick={handleClearFilter}>Clear Filter</button>
                 </div>
 
                 <div
-                    style={{
-                        marginLeft: "150px",
-                        margin: "10px 0",
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "8px",
-                    }}
+                    class="users-pagination"
                 >
                     <button
                         onClick={() =>
@@ -424,6 +424,7 @@ export default function AllTasks() {
                     border="1"
                     cellPadding="8"
                     style={{ width: "100%", borderCollapse: "collapse" }}
+                    class="users-table"
                 >
                     <thead>
                         <tr>
@@ -481,7 +482,19 @@ export default function AllTasks() {
                                           ).toLocaleDateString()
                                         : ""}
                                 </td>
-                                <td>{user.priority}</td>
+                                <td>
+                                    <span
+                                        className={`priority-tag ${
+                                            user.priority === "high"
+                                                ? "priority-high"
+                                                : user.priority === "medium"
+                                                ? "priority-medium"
+                                                : "priority-low"
+                                        }`}
+                                    >
+                                        {user.priority}
+                                    </span>
+                                </td>
                                 <td>{user.project_name}</td>
                                 <td>
                                     {reporterOptions.find(

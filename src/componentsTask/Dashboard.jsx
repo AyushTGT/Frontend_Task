@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Bar, Pie, Line } from "react-chartjs-2";
 import {
     Chart as ChartJS,
@@ -22,6 +22,7 @@ import {
 } from "../apis/taskapis";
 import NotificationBell from "./Notification";
 import axios from "axios";
+import "./MetricCard.css"
 
 ChartJS.register(
     CategoryScale,
@@ -34,7 +35,6 @@ ChartJS.register(
     PointElement,
     LineElement
 );
-
 
 // Dashboardtask component to display task metrics and charts
 
@@ -68,7 +68,6 @@ export default function Dashboardtask() {
 
     const assigneeObj = selectedAssignee ? { assignee: selectedAssignee } : {};
 
-
     useEffect(() => {
         async function getMetrics() {
             setLoading(true);
@@ -89,7 +88,8 @@ export default function Dashboardtask() {
                     overDue({ ...assigneeObj }),
                     thisMonth({ ...assigneeObj }),
                     fetchTaskCount({
-                        due_date: new Date().toISOString().slice(0, 10), ...assigneeObj
+                        due_date: new Date().toISOString().slice(0, 10),
+                        ...assigneeObj,
                     }),
                 ]);
 
@@ -192,7 +192,7 @@ export default function Dashboardtask() {
     useEffect(() => {
         async function fetchTasksCreatedVsCompleted() {
             try {
-               let url = "http://localhost:8000/byMonths";
+                let url = "http://localhost:8000/byMonths";
                 const params = new URLSearchParams(assigneeObj).toString();
                 if (params) {
                     url += `?${params}`;
@@ -212,15 +212,15 @@ export default function Dashboardtask() {
     }, []);
 
     useEffect(() => {
-            axios
-                .get("http://localhost:8000/userName", {
-                    // headers: { Authorization: `Bearer ${token}` },
-                })
-                .then((res) => {
-                    setAllUser(res.data);
-                })
-                .catch(() => {});
-        }, []);
+        axios
+            .get("http://localhost:8000/userName", {
+                // headers: { Authorization: `Bearer ${token}` },
+            })
+            .then((res) => {
+                setAllUser(res.data);
+            })
+            .catch(() => {});
+    }, []);
 
     const tasksCreatedVsCompletedData = {
         labels: months,
@@ -231,7 +231,6 @@ export default function Dashboardtask() {
                 borderColor: "aqua",
                 backgroundColor: "white",
                 fill: true,
-                
             },
             {
                 label: "Tasks Completed",
@@ -239,17 +238,79 @@ export default function Dashboardtask() {
                 borderColor: "green",
                 backgroundColor: "white",
                 fill: true,
-                
             },
         ],
     };
+
+    // --- Carousel (Single-Box Graphs) Implementation ---
+
+    // Chart carousel setup
+    const CHARTS = [
+        {
+            type: "Bar",
+            component: Bar,
+            data: tasksPerDayData,
+            title: "Tasks Completed Per Day",
+            options: { responsive: true, plugins: { legend: { position: "bottom" } } },
+        },
+        {
+            type: "Pie",
+            component: Pie,
+            data: overdueTasksData,
+            title: "Overdue vs On Time",
+            options: { responsive: true, plugins: { legend: { position: "bottom" } }, radius: "80%" },
+        },
+        {
+            type: "Bar",
+            component: Bar,
+            data: tasksByStatusData,
+            title: "Tasks by Status",
+            options: { responsive: true, plugins: { legend: { position: "bottom" } } },
+        },
+        {
+            type: "Line",
+            component: Line,
+            data: tasksCreatedVsCompletedData,
+            title: "Tasks Created vs Completed (Monthly)",
+            options: {
+                responsive: true,
+                plugins: { legend: { position: "bottom" } },
+                scales: { y: { beginAtZero: true } },
+            },
+        }
+    ];
+
+    const [index, setIndex] = useState(0);
+    const intervalRef = useRef(null);
+
+    // Auto-scroll every 4 seconds
+    useEffect(() => {
+        intervalRef.current = setInterval(() => {
+            setIndex(prev => (prev + 1) % CHARTS.length);
+        }, 6000);
+        return () => clearInterval(intervalRef.current);
+    }, [CHARTS.length]);
+
+    // Manual navigation resets timer
+    const goTo = (i) => {
+        setIndex(i);
+        clearInterval(intervalRef.current);
+        intervalRef.current = setInterval(() => {
+            setIndex(prev => (prev + 1) % CHARTS.length);
+        }, 4000);
+    };
+
+    const prev = () => goTo((index - 1 + CHARTS.length) % CHARTS.length);
+    const next = () => goTo((index + 1) % CHARTS.length);
+
+    const { component: ChartComponent, data, title, options } = CHARTS[index];
 
     return (
         <div style={{ flex: 1, background: "#f5f6fa", padding: "24px" }}>
             <Header user={user} />
             <NotificationBell assigneeId={user?.id} />
 
-            { user?.post === "Master" && (
+            {user?.post === "Master" && (
                 <div style={{ margin: "16px 0" }}>
                     <label>
                         Select User:&nbsp;
@@ -272,7 +333,7 @@ export default function Dashboardtask() {
                         </select>
                     </label>
                 </div>
-            )} 
+            )}
 
             {loading ? (
                 <div>Loading metrics...</div>
@@ -282,105 +343,34 @@ export default function Dashboardtask() {
                 <MetricCards metrics={metrics} />
             )}
 
-            <div
-                style={{
-                    display: "flex",
-                    gap: 24,
-                    marginBottom: 24,
-                }}
-            >
-                <div
-                    style={{
-                        flex: "1 1 320px",
-                        background: "#fff",
-                        padding: 24,
-                        borderRadius: 14,
-                        minWidth: 320,
-                        boxShadow: "0 2px 10px rgba(30,40,80,0.05)",
-                        transition: "box-shadow 0.2s",
-                        alignItems: "center",
-                        display: "flex",
-                    }}
+            <div class="container">
+                <button
+                    class="arrow-btn left"
+                    onClick={prev}
+                    aria-label="Previous chart"
                 >
-                    <Bar
-                        data={tasksPerDayData}
-                        options={{
-                            responsive: true,
-                            plugins: { legend: { position: "bottom" },
-                    },
-                        }}
-                    />
+                    &#8592;
+                </button>
+                <button
+                    class="arrow-btn right"
+                    onClick={next}
+                    aria-label="Next chart"
+                >
+                    &#8594;
+                </button>
+                <div class="title">{title}</div>
+                <div style={{ width: "100%", minHeight: 220 }}>
+                    <ChartComponent data={data} options={options} />
                 </div>
-                <div
-                    style={{
-                        flex: "1 1 320px",
-                        background: "#fff",
-                        padding: 24,
-                        borderRadius: 14,
-                        minWidth: 320,
-                        boxShadow: "0 2px 10px rgba(30,40,80,0.05)",
-                        transition: "box-shadow 0.2s",
-                    }}
-                >
-                    <Pie
-                        data={overdueTasksData}
-                        options={{
-                            responsive: true,
-                            plugins: { legend: { position: "bottom" } },
-                            radius: "80%",
-                        }}
-                    />
-                </div>
-            </div>
-
-            <div
-                style={{
-                    display: "flex",
-                    gap: 24,
-                    flexWrap: "wrap",
-                    marginBottom: 24,
-                }}
-            >
-                <div
-                    style={{
-                        flex: "1 1 100px",
-                        background: "#fff",
-                        padding: 24,
-                        borderRadius: 14,
-                        minWidth: 100,
-                        boxShadow: "0 0 10px rgba(30,40,80,0.05)",
-                        transition: "box-shadow 0.2s",
-                    }}
-                >
-                    <Bar
-                        data={tasksByStatusData}
-                        options={{
-                            responsive: true,
-                            plugins: { legend: { position: "bottom" } },
-                        }}
-                    />
-                </div>
-                <div
-                    style={{
-                        flex: "1 1 100px",
-                        background: "#fff",
-                        padding: 24,
-                        borderRadius: 14,
-                        minWidth: 100,
-                        boxShadow: "0 2px 10px rgba(30,40,80,0.05)",
-                        transition: "box-shadow 0.2s",
-                    }}
-                >
-                    <Line
-                        data={tasksCreatedVsCompletedData}
-                        options={{
-                            responsive: true,
-                            plugins: { legend: { position: "bottom" } },
-                            scales: {
-                                y: { beginAtZero: true },
-                            },
-                        }}
-                    />
+                <div class="dots">
+                    {CHARTS.map((_, i) => (
+                        <span
+                            key={i}
+                            className={`dot${i === index ? " active" : ""}`}
+                            onClick={() => goTo(i)}
+                            aria-label={`Go to chart ${i + 1}`}
+                        />
+                    ))}
                 </div>
             </div>
         </div>

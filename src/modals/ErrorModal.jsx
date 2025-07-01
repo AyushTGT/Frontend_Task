@@ -1,6 +1,6 @@
 import React from "react";
 
-function ErrorModal({ open, message, onClose }) {
+function ErrorModal({ open, message, onClose, title }) {
     if (!open) return null;
 
     return (
@@ -32,7 +32,9 @@ function ErrorModal({ open, message, onClose }) {
                 }}
                 onClick={(e) => e.stopPropagation()}
             >
-                <h3 style={{ margin: 0, marginBottom: 10, color: "#c00" }}>Error</h3>
+                <h3 style={{ margin: 0, marginBottom: 10, color: "#c00" }}>
+                    {title || "Error"}
+                </h3>
                 <div style={{ marginBottom: 18 }}>{message}</div>
                 <button
                     onClick={onClose}

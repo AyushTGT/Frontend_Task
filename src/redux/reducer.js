@@ -4,6 +4,7 @@ const initialState = {
     form: {
         email: "",
         password: "",
+        recaptchaToken: "",
     },
     errors: {},
     isLoading: false,

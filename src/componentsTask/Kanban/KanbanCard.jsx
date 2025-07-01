@@ -128,69 +128,69 @@ function Tooltip({ title, children }) {
     return <span title={title}>{children}</span>;
 }
 
-function DropdownMenu({ items, children }) {
-    const [open, setOpen] = React.useState(false);
+// function DropdownMenu({ items, children }) {
+//     const [open, setOpen] = React.useState(false);
 
-    const handleClick = (e) => {
-        e.stopPropagation();
-        setOpen((o) => !o);
-    };
+//     const handleClick = (e) => {
+//         e.stopPropagation();
+//         setOpen((o) => !o);
+//     };
 
-    return (
-        <span style={{ position: "relative" }}>
-            {React.cloneElement(children, {
-                onClick: (e) => {
-                    e.stopPropagation();
-                    handleClick(e);
-                },
-            })}
-            {open && (
-                <div
-                    style={{
-                        position: "absolute",
-                        right: 0,
-                        top: "28px",
-                        background: "#fff",
-                        border: "1px solid #e0e0e0",
-                        borderRadius: "6px",
-                        minWidth: "120px",
-                        zIndex: 99,
-                        boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
-                    }}
-                >
-                    {items.map((item) => (
-                        <div
-                            key={item.key}
-                            style={{
-                                padding: "8px 16px",
-                                display: "flex",
-                                alignItems: "center",
-                                cursor: "pointer",
-                                color: item.danger ? "#f5222d" : "#333",
-                                borderBottom: "1px solid #f5f5f5",
-                                background: "none",
-                                fontWeight: item.danger ? "bold" : "normal",
-                            }}
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                if (item.onClick) item.onClick();
-                                setOpen(false);
-                            }}
-                            onMouseDown={(e) => e.stopPropagation()}
-                        >
-                            {item.icon && (
-                                <span style={{ marginRight: "8px" }}>
-                                    {item.icon}
-                                </span>
-                            )}
-                            {item.label}
-                        </div>
-                    ))}
-                </div>
-            )}
-        </span>
-    );
-}
+//     return (
+//         <span style={{ position: "relative" }}>
+//             {React.cloneElement(children, {
+//                 onClick: (e) => {
+//                     e.stopPropagation();
+//                     handleClick(e);
+//                 },
+//             })}
+//             {open && (
+//                 <div
+//                     style={{
+//                         position: "absolute",
+//                         right: 0,
+//                         top: "28px",
+//                         background: "#fff",
+//                         border: "1px solid #e0e0e0",
+//                         borderRadius: "6px",
+//                         minWidth: "120px",
+//                         zIndex: 99,
+//                         boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
+//                     }}
+//                 >
+//                     {items.map((item) => (
+//                         <div
+//                             key={item.key}
+//                             style={{
+//                                 padding: "8px 16px",
+//                                 display: "flex",
+//                                 alignItems: "center",
+//                                 cursor: "pointer",
+//                                 color: item.danger ? "#f5222d" : "#333",
+//                                 borderBottom: "1px solid #f5f5f5",
+//                                 background: "none",
+//                                 fontWeight: item.danger ? "bold" : "normal",
+//                             }}
+//                             onClick={(e) => {
+//                                 e.stopPropagation();
+//                                 if (item.onClick) item.onClick();
+//                                 setOpen(false);
+//                             }}
+//                             onMouseDown={(e) => e.stopPropagation()}
+//                         >
+//                             {item.icon && (
+//                                 <span style={{ marginRight: "8px" }}>
+//                                     {item.icon}
+//                                 </span>
+//                             )}
+//                             {item.label}
+//                         </div>
+//                     ))}
+//                 </div>
+//             )}
+//         </span>
+//     );
+// }
 
 // Simple icons (replace with svg if you want)
 // const EyeOutlined = () => <span style={{ fontSize: 16 }}>👁️</span>;

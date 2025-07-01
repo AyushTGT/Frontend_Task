@@ -15,9 +15,9 @@ export function KanbanColumn({
         data,
     });
 
-    const onAddClickHandler = () => {
-        if (onAddClick) onAddClick({ id });
-    };
+    // const onAddClickHandler = () => {
+    //     if (onAddClick) onAddClick({ id });
+    // };
 
     return (
         <div className="kanban-column" ref={setNodeRef}>

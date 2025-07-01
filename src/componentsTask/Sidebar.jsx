@@ -1,16 +1,17 @@
 import { useNavigate, useLocation } from "react-router-dom";
 import "./Sidebar.css";
+import { HomeOutlined, CheckSquareOutlined, UnorderedListOutlined, TeamOutlined } from "@ant-design/icons";
 
 export default function Sidebar() {
     const navigate = useNavigate();
     const location = useLocation();
 
     const menuItems = [
-        { name: "Home", path: "/home" },
-        { name: "Tasks", path: "/tasks" },
-        { name: "All Tasks", path: "/tasklisting" },
-        { name: "User Listing", path: "/dashboard" },
-    ];
+  { name: "Home", path: "/home", icon: <HomeOutlined /> },
+  { name: "Tasks", path: "/tasks", icon: <CheckSquareOutlined /> },
+  { name: "All Tasks", path: "/tasklisting", icon: <UnorderedListOutlined /> },
+  { name: "User Listing", path: "/dashboard", icon: <TeamOutlined /> },
+];
 
     function onMenuClick(path) {
         navigate(path);
@@ -28,7 +29,8 @@ export default function Sidebar() {
                         className={`sidebar-menu-item${location.pathname === item.path ? " selected" : ""}`}
                         onClick={() => onMenuClick(item.path)}
                     >
-                        {item.name}
+                        <span className="sidebar-menu-icon">{item.icon}</span>
+                        <span>{item.name}</span>
                     </div>
                 ))}
             </div>

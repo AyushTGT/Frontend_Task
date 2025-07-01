@@ -1,4 +1,3 @@
-import React from "react";
 import Loginform from "./Loginform";
 import { useNavigate } from "react-router-dom";
 import Cookies from "js-cookie";
@@ -13,7 +12,7 @@ export default function LoginPage() {
     const navigate = useNavigate();
 
     const handleFormSubmit = async (formData) => {
-        const { email, password } = formData;
+        const { email, password, recaptchaToken } = formData;
 
         try {
             const response = await fetch(
@@ -35,7 +34,7 @@ export default function LoginPage() {
                 } else {
                     const reRegisterData = new FormData();
                     reRegisterData.append("email", email);
-
+                    
                     const reRegisterResponse = await fetch(
                         "http://localhost:8000/reRegisteringUser",
                         {
@@ -67,6 +66,7 @@ export default function LoginPage() {
             const data = new FormData();
             data.append("email", email);
             data.append("password", password);
+            data.append("recaptchaToken", recaptchaToken);
 
             const regResponse = await fetch("http://localhost:8000/login", {
                 method: "POST",

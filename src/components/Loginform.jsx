@@ -7,6 +7,7 @@ import {
     setLoginErrors,
     setLoginLoading,
 } from "../redux/action";
+import ReCAPTCHA from "react-google-recaptcha";
 
 export default function Loginform({ onSubmit }) {
     const form = useSelector((state) => state.login.form);
@@ -14,6 +15,7 @@ export default function Loginform({ onSubmit }) {
     const isLoading = useSelector((state) => state.login.isLoading);
     const dispatch = useDispatch();
     const [showPassword, setShowPassword] = useState(false);
+    const [recaptchaToken, setRecaptchaToken] = useState("");
 
     const validateField = (field, value) => {
         let err = "";
@@ -51,8 +53,19 @@ export default function Loginform({ onSubmit }) {
         return Object.keys(currErrors).length === 0;
     };
 
+    const handleRecaptchaChange = (token) => {
+        dispatch(updateLoginForm("recaptchaToken", token));
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
+        console.log(form);
+
+        if (!form.recaptchaToken) {
+            alert("Please complete the CAPTCHA.");
+            return;
+        }
+
         if (validateAll()) {
             dispatch(setLoginLoading(true));
             try {
@@ -114,6 +127,12 @@ export default function Loginform({ onSubmit }) {
                     <span className="error">{errors.password}</span>
                 )}
             </div>
+
+            <ReCAPTCHA
+                sitekey="6LcDu3IrAAAAAA31RbkV4pHZtZHzdfi8Wujydxs3"
+                onChange={handleRecaptchaChange}
+            />
+
             <button
                 type="submit"
                 disabled={!isFormValid() || isLoading}

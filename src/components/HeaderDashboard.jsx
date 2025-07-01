@@ -18,7 +18,7 @@ export default function Header({ user }) {
             }}
         >
             <div style={{ fontSize: "1.3rem", fontWeight: 600 }}>
-                Hi, {user?.name || "User"} 👋
+                Hi, {user?.name || "User"} <i class="fa fa-hand-peace-o" aria-hidden="true"></i>
             </div>
             <ProfileButton />
         </div>

@@ -12,8 +12,7 @@ export default function TaskDetailModal({
     const [editing, setEditing] = useState(false);
     const modalRef = useRef(null);
 
-    useEffect(() => {
-        
+    useEffect(() => {    
         function handleClick(event) {
             if (modalRef.current && !modalRef.current.contains(event.target)) {
                 onClose();
