@@ -14,7 +14,7 @@ import { getUsers, getProfile } from "../apis/userapis.jsx";
 
 function Dashboard({ myProfile1 }) {
     console.log({ myProfile1 });
-    const navigate = useNavigate();
+    // const navigate = useNavigate();
     const [users, setUsers] = useState([]);
     const [pagination, setPagination] = useState({
         page: 1,
@@ -179,12 +179,12 @@ function Dashboard({ myProfile1 }) {
     const handleSelectAll = (checked) => {
         //setSelectedUsers(checked ? users.map((u) => u.id) : []);
         setSelectedUsers(
-        checked
-            ? users
-                .filter((u) => u.deleted_by === null) // Only include users not deleted
-                .map((u) => u.id)
-            : []
-    );
+            checked
+                ? users
+                      .filter((u) => u.deleted_by === null) // Only include users not deleted
+                      .map((u) => u.id)
+                : []
+        );
     };
 
     // Handle delete user with confirmation
@@ -280,12 +280,10 @@ function Dashboard({ myProfile1 }) {
     };
 
     return (
-        <div style={{ flex: 1, background: "#f5f6fa", padding: "24px" }} >
+        <div class="apple">
             <Header user={myProfile} />
             <div>
-                <div
-                    class="filters-container"
-                >
+                <div class="filters-container">
                     {/* Search and filter */}
                     <input
                         placeholder="Search name/email"
@@ -305,12 +303,11 @@ function Dashboard({ myProfile1 }) {
                     </select>
 
                     {/* Main actions */}
-                    
+
                     <button
                         onClick={() => setModalUserAdd({})}
                         class="add-user-btn"
-                        disabled={ myProfile?.post === "User" }
-                       
+                        disabled={myProfile?.post === "User"}
                     >
                         Add User
                     </button>
@@ -337,9 +334,7 @@ function Dashboard({ myProfile1 }) {
 
                     {/* Divider for bulk actions */}
                     {myProfile?.post !== "User" && selectedUsers.length > 0 && (
-                        <div
-                            class="btn-container"
-                        >
+                        <div class="btn-container">
                             <button
                                 onClick={handleBulkDelete}
                                 class="bulk-delete-btn"
@@ -375,9 +370,7 @@ function Dashboard({ myProfile1 }) {
                 </div>
 
                 {/* pagination control */}
-                <div
-                    class="users-pagination"
-                >
+                <div class="users-pagination">
                     <button
                         onClick={() =>
                             setPagination((p) => ({ ...p, page: 1 }))
@@ -459,17 +452,18 @@ function Dashboard({ myProfile1 }) {
                     </span>
                 </div>
 
-                <table
-                    border="1px solid black"
-                    class="users-table"
-                >
+                <table border="1px solid black" class="users-table">
                     <thead>
                         <tr>
                             <th hidden={myProfile?.post === "User"}>
                                 <input
                                     type="checkbox"
-                                    checked={selectedUsers.length === users.filter(u => u.deleted_by === null).length}
-
+                                    checked={
+                                        selectedUsers.length ===
+                                        users.filter(
+                                            (u) => u.deleted_by === null
+                                        ).length
+                                    }
                                     onChange={(e) =>
                                         handleSelectAll(e.target.checked)
                                     }
@@ -650,7 +644,7 @@ function Dashboard({ myProfile1 }) {
                     </tbody>
                 </table>
 
-                {/* Modal */}             
+                {/* Modal */}
 
                 <UserModal
                     myProfile={myProfile}

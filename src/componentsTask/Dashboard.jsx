@@ -22,7 +22,8 @@ import {
 } from "../apis/taskapis";
 import NotificationBell from "./Notification";
 import axios from "axios";
-import "./MetricCard.css"
+import "./MetricCard.css";
+import Select from "react-select";
 
 ChartJS.register(
     CategoryScale,
@@ -242,30 +243,38 @@ export default function Dashboardtask() {
         ],
     };
 
-    // --- Carousel (Single-Box Graphs) Implementation ---
-
-    // Chart carousel setup
+    //Charts
     const CHARTS = [
         {
             type: "Bar",
             component: Bar,
             data: tasksPerDayData,
             title: "Tasks Completed Per Day",
-            options: { responsive: true, plugins: { legend: { position: "bottom" } } },
+            options: {
+                responsive: true,
+                plugins: { legend: { position: "bottom" } },
+            },
         },
         {
             type: "Pie",
             component: Pie,
             data: overdueTasksData,
             title: "Overdue vs On Time",
-            options: { responsive: true, plugins: { legend: { position: "bottom" } }, radius: "80%" },
+            options: {
+                responsive: true,
+                plugins: { legend: { position: "bottom" } },
+                radius: "80%",
+            },
         },
         {
             type: "Bar",
             component: Bar,
             data: tasksByStatusData,
             title: "Tasks by Status",
-            options: { responsive: true, plugins: { legend: { position: "bottom" } } },
+            options: {
+                responsive: true,
+                plugins: { legend: { position: "bottom" } },
+            },
         },
         {
             type: "Line",
@@ -277,7 +286,7 @@ export default function Dashboardtask() {
                 plugins: { legend: { position: "bottom" } },
                 scales: { y: { beginAtZero: true } },
             },
-        }
+        },
     ];
 
     const [index, setIndex] = useState(0);
@@ -286,7 +295,7 @@ export default function Dashboardtask() {
     // Auto-scroll every 4 seconds
     useEffect(() => {
         intervalRef.current = setInterval(() => {
-            setIndex(prev => (prev + 1) % CHARTS.length);
+            setIndex((prev) => (prev + 1) % CHARTS.length);
         }, 6000);
         return () => clearInterval(intervalRef.current);
     }, [CHARTS.length]);
@@ -296,7 +305,7 @@ export default function Dashboardtask() {
         setIndex(i);
         clearInterval(intervalRef.current);
         intervalRef.current = setInterval(() => {
-            setIndex(prev => (prev + 1) % CHARTS.length);
+            setIndex((prev) => (prev + 1) % CHARTS.length);
         }, 4000);
     };
 
@@ -305,16 +314,37 @@ export default function Dashboardtask() {
 
     const { component: ChartComponent, data, title, options } = CHARTS[index];
 
+    const assigneeOptions = [
+        { value: "", label: "All" },
+        ...allUser.map((user) => ({
+            value: user.id,
+            label: user.name,
+        })),
+    ];
+
     return (
-        <div style={{ flex: 1, background: "#f5f6fa", padding: "24px" }}>
+        <div class="apple">
             <Header user={user} />
             <NotificationBell assigneeId={user?.id} />
 
             {user?.post === "Master" && (
-                <div style={{ margin: "16px 0" }}>
-                    <label>
+                <div
+                    style={{
+                        marginTop: "-30px",
+                        marginBottom: 20,
+                        display: "flex",
+
+                        justifyContent: "center",
+                        alignItems: "center",
+                        border: "1px solid #e0e0e0",
+                        padding: "16px 24px",
+                        borderRadius: "10px",
+                    }}
+                >
+                    <label styel={{ fontWeight: "bold" }}>
                         Select User:&nbsp;
-                        <select
+                    </label>
+                        {/* <select
                             value={selectedAssignee}
                             onChange={handleAssigneeChange}
                             style={{
@@ -330,8 +360,28 @@ export default function Dashboardtask() {
                                     {u.name}
                                 </option>
                             ))}
-                        </select>
-                    </label>
+                        </select> */}
+                        <Select
+                            value={assigneeOptions.find(
+                                (option) => option.value === selectedAssignee
+                            )}
+                            onChange={(selectedOption) =>
+                                setSelectedAssignee(selectedOption?.value || "")
+                            }
+                            options={assigneeOptions}
+                            isSearchable={true}
+                            placeholder="Search assignees..."
+                            noOptionsMessage={() => "No assignees found"}
+                            styles={{
+                                container: (provided) => ({
+                                    ...provided,
+                                    minWidth: "200px",
+                                    width: "200px",
+                                    maxWidth: "200px",
+                                }),
+                            }}
+                        />
+                    
                 </div>
             )}
 

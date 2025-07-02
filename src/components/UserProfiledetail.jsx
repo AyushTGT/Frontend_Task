@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import Cookies from "js-cookie";
 import { UserOutlined } from "@ant-design/icons";
+import "./Dashboard.css";
 
 //Modal for showing the user profile details
 // with logout and account deactivsation options
@@ -114,7 +115,7 @@ export default function ProfileButton() {
 
     return (
         <div style={{ position: "relative", display: "inline-block" }}>
-            <button style={buttonStyle} onClick={fetchUser} disabled={loading}>
+            <button class="button-style"  onClick={fetchUser} disabled={loading}>
                 <span role="img" aria-label="profile">
                     <UserOutlined />
                 </span>
@@ -123,7 +124,7 @@ export default function ProfileButton() {
                 <div style={{ color: "red", marginTop: "10px" }}>{error}</div>
             )}
             {showProfile && user && (
-                <div ref={popupRef} style={profileStyle}>
+                <div ref={popupRef} class="profile-style" >
                     <h2 style={{ margin: "0 0 10px 0" }}>{user.name}</h2>
                     <p>
                         <strong>Email:</strong> {user.email}
@@ -135,7 +136,7 @@ export default function ProfileButton() {
                         <strong>Role:</strong> {user.post}
                     </p>
                     <p>
-                        <strong>Created at:</strong> {user.created_at}
+                        <strong>Created at:</strong> {new Date(user.created_at).toLocaleString()}
                     </p>
                     <p>
                         <strong>Email Verified:</strong>{" "}
@@ -145,11 +146,12 @@ export default function ProfileButton() {
                         <strong>Total Duration:</strong>{" "}
                         {user.total_duration_loggedin}
                     </p>
-                    <button style={logoutStyle} onClick={handleLogout}>
+                    <button class="logout-style" onClick={handleLogout}>
                         Logout
                     </button>
                     <button
-                        style={logoutStyle}
+                        class="logout-style"
+                        style={{ marginLeft: "10px" }}
                         onClick={(e) => {
                             e.stopPropagation();
                             handleDeactivate(user.id);

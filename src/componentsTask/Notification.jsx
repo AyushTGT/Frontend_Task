@@ -3,18 +3,19 @@ import Pusher from "pusher-js";
 import axios from "axios";
 import { BellOutlined } from "@ant-design/icons";
 
-
 //Page for notification bell component
 
-export default function NotificationBell({ assigneeId}) {
+export default function NotificationBell({ assigneeId }) {
     const [notifications, setNotifications] = useState([]);
     const [dropdownOpen, setDropdownOpen] = useState(false);
 
     useEffect(() => {
         if (!assigneeId) return;
         axios
-            .get(`http://localhost:8000/notifications?assignee=${assigneeId}`, {
-            })
+            .get(
+                `http://localhost:8000/notifications?assignee=${assigneeId}`,
+                {}
+            )
             .then((res) => {
                 setNotifications(res.data || []);
             });
@@ -28,6 +29,7 @@ export default function NotificationBell({ assigneeId}) {
 
         const channel = pusher.subscribe(`user.${assigneeId}`);
         channel.bind("notification.created", function (data) {
+            console.log({ data }, 31);
             setNotifications((prev) => [data.notification, ...prev]);
         });
 
@@ -40,18 +42,12 @@ export default function NotificationBell({ assigneeId}) {
 
     const markAsRead = (id) => {
         axios
-            .post(
-                `http://localhost:8000/notifications/${id}/read`,
-                {},
-                {
-                }
-            )
+            .post(`http://localhost:8000/notifications/${id}/read`, {}, {})
             .then(() => {
                 setNotifications((prev) => prev.filter((n) => n.id !== id));
             });
     };
 
-  
     useEffect(() => {
         if (!dropdownOpen) return;
 
@@ -76,14 +72,14 @@ export default function NotificationBell({ assigneeId}) {
     const dropdownRef = React.useRef(null);
 
     return (
-        <div style={{ display: "inline-block"}}>
+        <div style={{ display: "inline-block" }}>
             <span
                 ref={bellRef}
                 style={{
                     cursor: "pointer",
                     fontSize: "1.6em",
                     position: "relative",
-                    right: "-1050px",
+                    right: "-1000px",
                     top: "-95px",
                 }}
                 onClick={() => setDropdownOpen((v) => !v)}

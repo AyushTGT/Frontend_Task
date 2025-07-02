@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-
+import "../components/Dashboard.css"; // Assuming you have a CSS file for styles
 
 //Adding a new task modal component
 export default function AddTaskModal({
@@ -111,15 +111,11 @@ export default function AddTaskModal({
     
 
     return (
-        <div className="modal-backdrop" style={{
-            position: "fixed", left: 0, top: 0, right: 0, bottom: 0,
-            background: "rgba(0,0,0,0.3)", zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center"
-        }}>
+        <div class="modal-backdrop" >
             <div
+                class="modal"
                 ref={modalRef}
-                style={{
-                    background: "#fff", borderRadius: 8, padding: 24, minWidth: 400, maxWidth: 500, position: "relative"
-                }}>
+                >
                 <h2>Add Task</h2>
                 <form onSubmit={handleSubmit} style={{display: "flex", flexDirection: "column", gap: 12}}>
                     <input name="title" placeholder="Title" value={form.title} onChange={handleChange} required />
