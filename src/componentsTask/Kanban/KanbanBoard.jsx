@@ -5,6 +5,7 @@ import {
   useSensor,
   useSensors,
 } from "@dnd-kit/core";
+import "./Kanban.css"
 
 export function KanbanBoard({ onDragEnd, children }) {
   const mouseSensor = useSensor(MouseSensor, { activationConstraint: { distance: 5 } });
@@ -28,26 +29,8 @@ export function KanbanBoard({ onDragEnd, children }) {
 
 export function KanbanBoardContainer({ children }) {
   return (
-    <div
-      style={{
-        // width: "calc(100% + 64px)",
-        height: "calc(100vh - 64px)",
-        width: "100%",
-        
-        display: "flex",
-        flexDirection: "column",
-        margin: "-32px",
-      }}
-    >
-      <div
-        style={{
-          width: "100%",
-          height: "100%",
-          display: "flex",
-          padding: "32px",
-          overflow: "scroll",
-        }}
-      >
+    <div className="kanban-board-container">
+      <div className="kanban-board-inner">
         {children}
       </div>
     </div>

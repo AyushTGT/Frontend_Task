@@ -5,16 +5,12 @@ import Cookies from "js-cookie";
 
 export function KanbanItem({ children, id, data}) {
   const token = Cookies.get("userid");
-  //console.log(data?.users[0]?.id, token, data?.users[0]?.id != token);
     
     const { attributes, listeners, setNodeRef, active } = useDraggable({
         id,
         data,
         disabled: !(data?.users[0]?.id == token  ||  data?.stageId == 'unassigned'),
     });
-    // useEffect(() => {
-    //     console.log(data?.users[0]?.id, user?.id);
-    // }, [user]);
 
     return (
         <div className="kanban-item-container">

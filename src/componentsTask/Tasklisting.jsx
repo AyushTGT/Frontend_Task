@@ -5,6 +5,7 @@ import { TasksListPage } from "./Kanban/KanbanListing";
 import axios from "axios";
 import AddTaskModal from "../modals/AddTaskModal";
 import Cookies from "js-cookie";
+import SuccessModal from "../modals/SuccessModal";
 
 //Taks listing component from kanban listing page
 
@@ -13,7 +14,9 @@ export default function Tasklisting() {
     const [userError, setUserError] = useState(null);
     const [addTaskOpen, setAddTaskOpen] = useState(false);
     const [reporterOptions, setReporterOptions] = useState([]);
+    const [success, setSuccess] = useState(null);
     const token = Cookies.get("jwt_token");
+    
 
     useEffect(() => {
         axios
@@ -48,8 +51,6 @@ export default function Tasklisting() {
                     background: "#fff",
                     borderRadius: "32px",
                     display: "flex",
-                    // alignItems: "center",
-                    // verticalAlign: "middle",
                     justifyContent: "center",
                     marginBottom: "32px",
                     boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
@@ -94,7 +95,11 @@ export default function Tasklisting() {
                             );
                             setAddTaskOpen(false);
                             window.location.reload();
-                            //resetForm(); // Call resetForm if provided
+                            setSuccess("Task Added Successfully");
+                            setTimeout(() => {
+                                window.location.reload();
+                            }, 1000);
+                            
                         } catch (err) {
                             console.error("Error adding task:", err);
                             alert(
@@ -103,6 +108,13 @@ export default function Tasklisting() {
                             );
                         }
                     }}
+                />
+
+                <SuccessModal
+                    open={!!success}
+                    message={success}
+                    onClose={() => setSuccess("")}
+                    title="Successful"
                 />
             </div>
         </div>

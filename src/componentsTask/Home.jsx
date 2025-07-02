@@ -2,8 +2,7 @@ import Dashboard from "./Dashboard";
 
 const homeContainerStyle = {
     display: "flex",
-    flexDirection: "row",
-    
+    flexDirection: "row", 
 };
 
 export default function Home() {

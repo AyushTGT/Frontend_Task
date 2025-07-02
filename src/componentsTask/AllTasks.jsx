@@ -7,6 +7,7 @@ import { useNavigate } from "react-router-dom";
 import AddTaskModal from "../modals/AddTaskModal";
 import TaskDetailModal from "../modals/TaskDetailModal";
 import ErrorModal from "../modals/ErrorModal";
+import Select from "react-select";
 
 //task page listing same as user listing with search paramters and filters
 
@@ -20,15 +21,9 @@ export default function AllTasks() {
         last_page: 1,
     });
     const [search, setSearch] = useState("");
-    // const [postFilter, setPostFilter] = useState("");
     const [sortField, setSortField] = useState("title");
     const [sortOrder, setSortOrder] = useState("asc");
-
-    // const [selectedUsers, setSelectedUsers] = useState([]);
-    // const [modalUser, setModalUser] = useState(null);
-    // const [modalUserAdd, setModalUserAdd] = useState(null);
     const [selectedStatus, setSelectedStatus] = useState("");
-    // const [profileModal, setProfileModal] = useState(false);
     const [myProfile, setMyProfile] = useState(null);
     const token = Cookies.get("jwt_token");
     const searchTimeout = useRef(null);
@@ -72,7 +67,6 @@ export default function AllTasks() {
             sort: sortField,
             order: sortOrder,
             per_page,
-            // post: postFilter,
             page,
             reporter: reporterFilter,
             created_by: assignedByFilter,
@@ -138,6 +132,8 @@ export default function AllTasks() {
         fetchProfile();
     }, []);
 
+    //Debouncing the search input
+    // This will wait for 500ms after the user stops typing before fetching users
     useEffect(() => {
         if (searchTimeout.current) clearTimeout(searchTimeout.current);
 
@@ -156,8 +152,6 @@ export default function AllTasks() {
         reporterFilter,
         assignedByFilter,
         assigneeFilter,
-        // postFilter,
-        // selectedStatus,
         sortField,
         sortOrder,
         pagination.page,
@@ -166,6 +160,8 @@ export default function AllTasks() {
         dueDateEnd,
     ]);
 
+    // Sorting handler
+    // This function toggles the sort order for a field or sets it to ascending if a different field is clicked
     const handleSort = (field) => {
         if (sortField === field)
             setSortOrder(sortOrder === "asc" ? "desc" : "asc");
@@ -175,27 +171,7 @@ export default function AllTasks() {
         }
     };
 
-    // const handleSelectUser = (id) => {
-    //     setSelectedUsers((prev) =>
-    //         prev.includes(id) ? prev.filter((uid) => uid !== id) : [...prev, id]
-    //     );
-    // };
-
-    // const handleSelectAll = (checked) => {
-    //     setSelectedUsers(checked ? users.map((u) => u.id) : []);
-    // };
-
-    // Logout handler (unchanged, add as needed)
-    // const handleLogout = () => {
-    //     fetch("http://localhost:8000/logout", {
-    //         method: "POST",
-    //         headers: { Authorization: `Bearer ${token}` },
-    //     }).then(() => {
-    //         Cookies.remove("jwt_token");
-    //         window.location.href = "/login";
-    //     });
-    // };
-
+    //Clicking a row to open task detail modal
     const handleRowClick = (task) => {
         setModalTask(task);
         setTaskDetailOpen(true);
@@ -208,11 +184,10 @@ export default function AllTasks() {
         setSelectedPriority("");
         setSortField("title");
         setSortOrder("asc");
-        // setSelectedUsers([]);
         setReporterFilter("");
         setAssignedByFilter("");
         setAssigneeFilter("");
-        setDueDateStart(""); // add this
+        setDueDateStart("");
         setDueDateEnd("");
         setPagination({ page: 1, per_page: 20, total: 0, last_page: 1 });
     };
@@ -237,18 +212,20 @@ export default function AllTasks() {
             );
         }
     };
+    const selectOptions = [
+        { value: "", label: "All Reporters" },
+        ...reporterOptions.map((user) => ({
+            value: user.id,
+            label: user.name,
+        })),
+    ];
 
     // UI
     return (
-        <div 
-            
-            style={{ flex: 1, background: "#f5f6fa", padding: "24px" }}
-        >
+        <div class="apple">
             <Header user={myProfile} />
             <div>
-                <div
-                    class="filters-container"
-                >
+                <div class="filters-container">
                     <input
                         placeholder="Search task"
                         value={search}
@@ -267,6 +244,27 @@ export default function AllTasks() {
                             </option>
                         ))}
                     </select>
+                    {/* <Select
+                        value={selectOptions.find(
+                            (option) => option.value === reporterFilter
+                        )}
+                        onChange={(selectedOption) =>
+                            setReporterFilter(selectedOption?.value || "")
+                        }
+                        options={selectOptions}
+                        isSearchable={true}
+                        placeholder="Search reporters..."
+                        noOptionsMessage={() => "No reporters found"}
+                        class="select-input"
+                        styles={{
+                            container: (provided) => ({
+                                ...provided,
+                                width: "150px",
+                                minWidth: "150px",
+                                maxWidth: "150px", 
+                            }),
+                        }}
+                    /> */}
                     <select
                         value={assignedByFilter}
                         class="select-input"
@@ -330,15 +328,21 @@ export default function AllTasks() {
                         style={{ minWidth: 120 }}
                     />
 
-                    <button class="add-user-btn" onClick={() => setAddTaskOpen(true)}>
+                    <button
+                        class="add-user-btn"
+                        onClick={() => setAddTaskOpen(true)}
+                    >
                         Add Task
                     </button>
-                    <button class="clear-filter-btn" onClick={handleClearFilter}>Clear Filter</button>
+                    <button
+                        class="clear-filter-btn"
+                        onClick={handleClearFilter}
+                    >
+                        Clear Filter
+                    </button>
                 </div>
 
-                <div
-                    class="users-pagination"
-                >
+                <div class="users-pagination">
                     <button
                         onClick={() =>
                             setPagination((p) => ({ ...p, page: 1 }))

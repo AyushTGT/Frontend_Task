@@ -5,11 +5,13 @@ import Header from "./Header";
 import { useState } from "react";
 import "./Dashboard.css";
 import ErrorModal from "../modals/ErrorModal";
+import SuccessModal from "../modals/SuccessModal";
 
 export default function RegisterPage() {
     const navigate = useNavigate();
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState(null);
+    const [success, setSuccess] = useState(null);
 
     const handleFormSubmit = async (formData) => {
         setIsLoading(true);
@@ -63,6 +65,7 @@ export default function RegisterPage() {
             setError(
                 "Registration successful!\n" + JSON.stringify(result.message)
             );
+            setSuccess("Registration successful! Please check your email for verification.");
             navigate("/login");
         } catch (error) {
             setError(
@@ -99,6 +102,13 @@ export default function RegisterPage() {
                     open={!!error}
                     message={error}
                     onClose={() => setError("")}
+                />
+
+                <SuccessModal
+                    open={!!success}
+                    message={success}
+                    onClose={() => setSuccess("")}
+                    title="Successful"
                 />
             </div>
         </div>

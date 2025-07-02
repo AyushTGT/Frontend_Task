@@ -1,4 +1,4 @@
-import React, { use, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { KanbanBoardContainer, KanbanBoard } from "./KanbanBoard.jsx";
 import { KanbanColumn } from "./KanbanColumn.jsx";
 import { KanbanItem } from "./KanbanItem.jsx";
@@ -32,7 +32,7 @@ function mapStatusToColumn(status, due_date) {
     return "unassigned";
 }
 
-export function TasksListPage({ user /*,children*/ }) {
+export function TasksListPage({ user }) {
     const [allTasks, setAllTasks] = useState([]);
     const [tasks, setTasks] = useState([]);
     const [modalTask, setModalTask] = useState(null);
@@ -165,6 +165,7 @@ export function TasksListPage({ user /*,children*/ }) {
                                 err.response?.data?.message ||
                                 err.message)
                     );
+                    fetchTasks();
                 });
         }
     }
@@ -182,10 +183,9 @@ export function TasksListPage({ user /*,children*/ }) {
                             title={column.title}
                             count={column.tasks.length}
                         >
-                            {/* {isLoading && <ProjectCardSkeleton />} */}
                             {!isLoading &&
                                 column.tasks.map((task) => {
-                                    // console.log({ user }, 191);
+                                    
                                     return (
                                         <KanbanItem
                                             key={task.id}
@@ -197,6 +197,7 @@ export function TasksListPage({ user /*,children*/ }) {
                                             // }
                                         >
                                             <ProjectCardMemo
+                                                user={user}
                                                 {...task}
                                                 dueDate={
                                                     task.dueDate || undefined
@@ -213,7 +214,7 @@ export function TasksListPage({ user /*,children*/ }) {
                     ))}
                 </KanbanBoard>
             </KanbanBoardContainer>
-            {/* {children} */}
+
             <TaskDetailModal
                 open={taskDetailOpen}
                 onClose={() => setTaskDetailOpen(false)}
@@ -231,19 +232,3 @@ export function TasksListPage({ user /*,children*/ }) {
         </>
     );
 }
-
-// function PageSkeleton() {
-//     const columnCount = 4;
-//     const itemCount = 3;
-//     return (
-//         <KanbanBoardContainer>
-//             {Array.from({ length: columnCount }).map((_, index) => (
-//                 <KanbanColumnSkeleton key={index}>
-//                     {Array.from({ length: itemCount }).map((_, idx) => (
-//                         <ProjectCardSkeleton key={idx} />
-//                     ))}
-//                 </KanbanColumnSkeleton>
-//             ))}
-//         </KanbanBoardContainer>
-//     );
-// }
