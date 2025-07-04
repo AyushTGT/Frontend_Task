@@ -56,7 +56,7 @@ export default function ProfileButton() {
         setLoading(true);
         setError(null);
         try {
-            const res = await fetch("http://localhost:8000/me", {
+            const res = await fetch(`${process.env.REACT_APP_API_URL}/me`, {
                 headers: {
                     Authorization: `Bearer ${token}`,
                 },
@@ -74,7 +74,7 @@ export default function ProfileButton() {
     };
 
     const handleLogout = () => {
-        fetch("http://localhost:8000/logout", {
+        fetch(`${process.env.REACT_APP_API_URL}/logout`, {
             method: "POST",
             headers: { Authorization: `Bearer ${token}` },
         }).then(() => {

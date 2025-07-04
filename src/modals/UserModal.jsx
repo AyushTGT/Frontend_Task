@@ -1,12 +1,16 @@
 import React, { useEffect, useState } from "react";
 import Cookies from "js-cookie";
 import "../components/Dashboard.css";
+import SuccessModal from "./SuccessModal";
+import ErrorModal from "./ErrorModal";
 
 const roleOptions = ["User", "Admin", "Master"];
 
 function UserModal({ myProfile, user, onClose, onSave }) {
     const [form, setForm] = useState(user || {});
     const token = Cookies.get("jwt_token");
+    const [error, setError] = useState("");
+    const [success, setSuccess] = useState("");
 
     useEffect(() => {
         setForm(user || {});
@@ -24,7 +28,7 @@ function UserModal({ myProfile, user, onClose, onSave }) {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        fetch(`http://localhost:8000/updateUser/${user.id}`, {
+        fetch(`${process.env.REACT_APP_API_URL}/updateUser/${user.id}`, {
             method: "PUT",
             headers: {
                 "Content-Type": "application/json",
@@ -35,13 +39,14 @@ function UserModal({ myProfile, user, onClose, onSave }) {
             .then(async (res) => {
                 const data = await res.json();
                 if (!res.ok) {
-                    alert(data.error || "An error occurred while updating the user.");
+                    setError(data.error || "An error occurred while updating the user.");
                     return;
                 }
                 onSave(data);
+                setSuccess("User details updated successfully!");
             })
             .catch((err) => {
-                alert("Network error: " + err.message);
+                setError("Network error: " + err.message);
             });
     };
 
@@ -100,6 +105,17 @@ function UserModal({ myProfile, user, onClose, onSave }) {
                         </button>
                     </div>
                 </form>
+
+                <ErrorModal
+                    open={!!error}
+                    message={error}
+                    onClose={() => setError("")}
+                />
+                <SuccessModal
+                    open={!!success}
+                    message={success}
+                    onClose={() => setSuccess("")}
+                />
             </div>
         </div>
     );

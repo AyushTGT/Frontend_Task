@@ -5,6 +5,51 @@ import { BellOutlined } from "@ant-design/icons";
 
 //Page for notification bell component
 
+const bellStyle = {
+    cursor: "pointer",
+    fontSize: "1.6em",
+    position: "relative",
+    right: "-1000px",
+    top: "-95px",
+};
+
+const textStyle = {
+    position: "relative",
+    top: "-6px",
+    right: "0px",
+    background: "red",
+    color: "white",
+    borderRadius: "50%",
+    fontSize: "0.75em",
+    padding: "2px 6px",
+};
+
+const dropStyle = {
+    position: "fixed",
+    right: 10,
+    marginTop: -60,
+    width: 320,
+    background: "white",
+    boxShadow: "0 2px 12px rgba(0,0,0,0.15)",
+    zIndex: 1000,
+    borderRadius: 8,
+    maxHeight: 350,
+    overflowY: "auto",
+};
+
+const buttonStyle = {
+    position: "fixed",
+    right: 10,
+    marginTop: -60,
+    width: 320,
+    background: "white",
+    boxShadow: "0 2px 12px rgba(0,0,0,0.15)",
+    zIndex: 1000,
+    borderRadius: 8,
+    maxHeight: 350,
+    overflowY: "auto",
+};
+
 export default function NotificationBell({ assigneeId }) {
     const [notifications, setNotifications] = useState([]);
     const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -13,7 +58,7 @@ export default function NotificationBell({ assigneeId }) {
         if (!assigneeId) return;
         axios
             .get(
-                `http://localhost:8000/notifications?assignee=${assigneeId}`,
+                `${process.env.REACT_APP_API_URL}/notifications?assignee=${assigneeId}`,
                 {}
             )
             .then((res) => {
@@ -23,13 +68,14 @@ export default function NotificationBell({ assigneeId }) {
 
     useEffect(() => {
         if (!assigneeId) return;
-        const pusher = new Pusher("9ebcfeb7c106c3456664", {
+        const pusher = new Pusher(process.env.REACT_APP_PUSHER_KEY, {
             cluster: "ap2",
         });
 
         const channel = pusher.subscribe(`user.${assigneeId}`);
         channel.bind("notification.created", function (data) {
-            console.log({ data }, 31);
+            console.log(32);
+
             setNotifications((prev) => [data.notification, ...prev]);
         });
 
@@ -42,7 +88,7 @@ export default function NotificationBell({ assigneeId }) {
 
     const markAsRead = (id) => {
         axios
-            .post(`http://localhost:8000/notifications/${id}/read`, {}, {})
+            .post(`${process.env.REACT_APP_API_URL}/notifications/${id}/read`)
             .then(() => {
                 setNotifications((prev) => prev.filter((n) => n.id !== id));
             });
@@ -75,49 +121,16 @@ export default function NotificationBell({ assigneeId }) {
         <div style={{ display: "inline-block" }}>
             <span
                 ref={bellRef}
-                style={{
-                    cursor: "pointer",
-                    fontSize: "1.6em",
-                    position: "relative",
-                    right: "-1000px",
-                    top: "-95px",
-                }}
+                style={{ bellStyle }}
                 onClick={() => setDropdownOpen((v) => !v)}
             >
                 <BellOutlined />
                 {notifications.length > 0 && (
-                    <span
-                        style={{
-                            position: "relative",
-                            top: "-6px",
-                            right: "0px",
-                            background: "red",
-                            color: "white",
-                            borderRadius: "50%",
-                            fontSize: "0.75em",
-                            padding: "2px 6px",
-                        }}
-                    >
-                        {notifications.length}
-                    </span>
+                    <span style={{ textStyle }}>{notifications.length}</span>
                 )}
             </span>
             {dropdownOpen && (
-                <div
-                    ref={dropdownRef}
-                    style={{
-                        position: "fixed",
-                        right: 10,
-                        marginTop: -60,
-                        width: 320,
-                        background: "white",
-                        boxShadow: "0 2px 12px rgba(0,0,0,0.15)",
-                        zIndex: 1000,
-                        borderRadius: 8,
-                        maxHeight: 350,
-                        overflowY: "auto",
-                    }}
-                >
+                <div ref={dropdownRef} style={{ dropStyle }}>
                     {notifications.length === 0 ? (
                         <div style={{ padding: 16, color: "#888" }}>
                             No new notifications
@@ -154,15 +167,7 @@ export default function NotificationBell({ assigneeId }) {
                                     </div>
                                 )}
                                 <button
-                                    style={{
-                                        marginTop: 8,
-                                        fontSize: 12,
-                                        background: "#f0f0f0",
-                                        border: "none",
-                                        borderRadius: 4,
-                                        padding: "4px 8px",
-                                        cursor: "pointer",
-                                    }}
+                                    style={{ buttonStyle }}
                                     onClick={() => markAsRead(n.id)}
                                 >
                                     Mark as read

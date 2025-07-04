@@ -1,9 +1,10 @@
-import Loginform from "./Loginform";
 import { useNavigate } from "react-router-dom";
 import Cookies from "js-cookie";
-import Header from "./Header";
 import { useState } from "react";
+import Header from "./Header";
 import ErrorModal from "../modals/ErrorModal";
+import Loginform from "./Loginform";
+import "./Dashboard.css";
 
 //Handling login logic with fomr in loginform.jsx page
 
@@ -16,7 +17,7 @@ export default function LoginPage() {
 
         try {
             const response = await fetch(
-                `http://localhost:8000/checkEmail?email=${encodeURIComponent(
+                `${process.env.REACT_APP_API_URL}/checkEmail?email=${encodeURIComponent(
                     email
                 )}`
             );
@@ -29,14 +30,16 @@ export default function LoginPage() {
             if (emailExists.deleted !== null) {
                 if (emailExists.deleted !== email) {
                     setError("Email is deleted.");
-                    navigate("/login");
+                    setTimeout(() => {
+                       navigate("/login");
+                    }, 5000);
                     return;
                 } else {
                     const reRegisterData = new FormData();
                     reRegisterData.append("email", email);
                     
                     const reRegisterResponse = await fetch(
-                        "http://localhost:8000/reRegisteringUser",
+                        `${process.env.REACT_APP_API_URL}/reRegisteringUser`,
                         {
                             method: "POST",
                             body: reRegisterData,
@@ -49,7 +52,9 @@ export default function LoginPage() {
                     setError(
                         "Re-registration email sent. Please check your inbox to verify your account."
                     );
+                    setTimeout(() => {
                     navigate("/login");
+                }, 5000);
                     return;
                 }
             }
@@ -58,7 +63,9 @@ export default function LoginPage() {
                 setError(
                     "Email is not verified. Please verify your email first and login."
                 );
-                navigate("/login");
+                setTimeout(() => {
+                    navigate("/login");
+                }, 5000);
                 return;
             }
 
@@ -68,7 +75,7 @@ export default function LoginPage() {
             data.append("password", password);
             data.append("recaptchaToken", recaptchaToken);
 
-            const regResponse = await fetch("http://localhost:8000/login", {
+            const regResponse = await fetch(`${process.env.REACT_APP_API_URL}/login`, {
                 method: "POST",
                 body: data,
             });
@@ -91,19 +98,11 @@ export default function LoginPage() {
 
     return (
         <div
-            style={{
-                display: "flex",
-                flexDirection: "column",
-                gap: "40px",
-                background: "linear-gradient(120deg, #e0eafc, #cfdef3)",
-            }}
+            className="contain"           
         >
             <Header />
             <div
-                style={{
-                    minHeight: "100vh",
-                    background: "linear-gradient(120deg, #e0eafc, #cfdef3)",
-                }}
+                style={{ minHeight: "100vh"}}
             >
                 <Loginform onSubmit={handleFormSubmit} />
 

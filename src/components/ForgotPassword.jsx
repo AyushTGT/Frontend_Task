@@ -1,4 +1,3 @@
-import React from "react";
 import { useNavigate } from "react-router-dom";
 import ResetEmailForm from "./ResetEmail";
 import Header from "./Header";
@@ -13,7 +12,7 @@ export default function ResetPage() {
 
         try {
             const response = await fetch(
-                `http://localhost:8000/checkEmail?email=${encodeURIComponent(
+                `${process.env.REACT_APP_API_URL}/checkEmail?email=${encodeURIComponent(
                     email
                 )}`
             );
@@ -23,11 +22,11 @@ export default function ResetPage() {
             }
             const emailExists = await response.json();
 
-            if (!emailExists.exists) {
+            if (!emailExists?.exists) {
                 alert("No account found with this email. Please register.");
                 navigate("/");
                 return;
-            } else if (emailExists.exists && emailExists.verified === false) {
+            } else if (emailExists?.exists && emailExists.verified === false) {
                 alert(
                     "Email is not verified. Please verify your email first and login."
                 );
@@ -40,41 +39,29 @@ export default function ResetPage() {
             data.append("email", email);
 
             const regResponse = await fetch(
-                "http://localhost:8000/forgetPassword",
+                `${process.env.REACT_APP_API_URL}/forgetPassword`,
                 {
                     method: "POST",
                     body: data,
                 }
             );
             if (!regResponse.ok) {
-                throw new Error("Registration failed");
+                throw new Error("Reset of Password failed");
             }
             const result = await regResponse.json();
             alert(
-                "Password Reset Link Sent!\n" + JSON.stringify(result.message)
+                "Password Reset Link Sent!\n"
             );
             navigate("/login");
         } catch (error) {
-            alert("Couldn't Reset Password: " + JSON.stringify(error.message));
+            alert("Couldn't Reset Password: " + (error.message || "Unknown error"));
         }
     };
 
     return (
-        <div
-            style={{
-                display: "flex",
-                flexDirection: "column",
-                gap: "40px",
-                background: "linear-gradient(120deg, #e0eafc, #cfdef3)",
-            }}
-        >
+        <div>
             <Header />
-            <div
-                style={{
-                    minHeight: "100vh",
-                    background: "linear-gradient(120deg, #e0eafc, #cfdef3)",
-                }}
-            >
+            <div>
                 <ResetEmailForm onSubmit={handleFormSubmit} />
             </div>
         </div>

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
 function VerifyEmail() {
@@ -15,7 +15,7 @@ function VerifyEmail() {
             return;
         }
         console.log("Verification token:");
-        fetch(`http://localhost:8000/emailVerification?token=${token}`, {
+        fetch(`${process.env.REACT_APP_API_URL}/emailVerification?token=${token}`, {
             method: "GET",
         })
             .then(async (response) => {
@@ -28,11 +28,10 @@ function VerifyEmail() {
                 }, 3000);
             })
             .catch(() => {
-                console.log("Verification failed");
                 setMessage("Verification failed. Please try again.");
             });
     }, []);
-    console.log("Verification effect triggered");
+
     return (
         <div style={{ textAlign: "center", marginTop: "50px" }}>
             <h2>{message}</h2>

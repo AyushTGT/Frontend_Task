@@ -133,7 +133,7 @@ export default function Dashboardtask() {
     useEffect(() => {
         async function fetchTasksPerDay() {
             try {
-                let url = "http://localhost:8000/completedTasks";
+                let url = `${process.env.REACT_APP_API_URL}/completedTasks`;
                 const params = new URLSearchParams(assigneeObj).toString();
                 if (params) {
                     url += `?${params}`;
@@ -150,7 +150,7 @@ export default function Dashboardtask() {
                     ],
                 }));
             } catch (err) {
-                console.error("Failed to fetch completed tasks:", err);
+               setError("Failed to fetch completed tasks:", err);
             }
         }
         fetchTasksPerDay();
@@ -193,7 +193,7 @@ export default function Dashboardtask() {
     useEffect(() => {
         async function fetchTasksCreatedVsCompleted() {
             try {
-                let url = "http://localhost:8000/byMonths";
+                let url = `${process.env.REACT_APP_API_URL}/byMonths`;
                 const params = new URLSearchParams(assigneeObj).toString();
                 if (params) {
                     url += `?${params}`;
@@ -203,7 +203,7 @@ export default function Dashboardtask() {
                 setTasksCreated(result.created || Array(12).fill(0));
                 setTasksCompleted(result.completed || Array(12).fill(0));
             } catch (err) {
-                console.error(
+                setError(
                     "Failed to fetch tasks created vs completed:",
                     err
                 );
@@ -214,7 +214,7 @@ export default function Dashboardtask() {
 
     useEffect(() => {
         axios
-            .get("http://localhost:8000/userName", {
+            .get(`${process.env.REACT_APP_API_URL}/userName`, {
                 // headers: { Authorization: `Bearer ${token}` },
             })
             .then((res) => {
@@ -323,7 +323,7 @@ export default function Dashboardtask() {
     ];
 
     return (
-        <div class="apple">
+        <div className="apple">
             <Header user={user} />
             <NotificationBell assigneeId={user?.id} />
 
@@ -393,26 +393,26 @@ export default function Dashboardtask() {
                 <MetricCards metrics={metrics} />
             )}
 
-            <div class="container">
+            <div className="container">
                 <button
-                    class="arrow-btn left"
+                    className="arrow-btn left"
                     onClick={prev}
                     aria-label="Previous chart"
                 >
                     &#8592;
                 </button>
                 <button
-                    class="arrow-btn right"
+                    className="arrow-btn right"
                     onClick={next}
                     aria-label="Next chart"
                 >
                     &#8594;
                 </button>
-                <div class="title">{title}</div>
+                <div className="title">{title}</div>
                 <div style={{ width: "100%", minHeight: 220 }}>
                     <ChartComponent data={data} options={options} />
                 </div>
-                <div class="dots">
+                <div className="dots">
                     {CHARTS.map((_, i) => (
                         <span
                             key={i}
