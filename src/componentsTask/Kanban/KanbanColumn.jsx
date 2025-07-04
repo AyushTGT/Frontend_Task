@@ -29,7 +29,7 @@ export function KanbanColumn({
                 </div>
             </div>
             <div
-                class={`kanban-column-content${isOver ? " over" : ""}`}
+                className={`kanban-column-content${isOver ? " over" : ""}`}
                 style={{
                     overflowY: active ? "unset" : "auto",
                 }}

@@ -1,6 +1,6 @@
 import { useNavigate, useLocation } from "react-router-dom";
-import "./Sidebar.css";
 import { HomeOutlined, CheckSquareOutlined, UnorderedListOutlined, TeamOutlined } from "@ant-design/icons";
+import "./Sidebar.css";
 
 export default function Sidebar() {
     const navigate = useNavigate();

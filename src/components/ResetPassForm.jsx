@@ -1,7 +1,5 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import "./register.css";
-import { Link } from "react-router-dom";
-import Header from "./Header";
 
 const initialState = {
     password: "",
@@ -20,8 +18,8 @@ export default function ResetForm({ onSubmit }) {
         let err = "";
         if (field === "password") {
             if (!value) err = "Password is required";
-            else if (value.length < 6)
-                err = "Password must be at least 6 characters";
+            else if (value.length < 9)
+                err = "Password must be at least 9 characters";
         }
         if (field === "confirmPassword") {
             if (!value) err = "Please confirm your password";

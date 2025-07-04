@@ -1,20 +1,16 @@
-import React, { use, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Cookies from "js-cookie";
+import { connect } from "react-redux";
 import "./Dashboard.css";
 import UserModal from "../modals/UserModal.jsx";
 import UserModalAdd from "../modals/UserModalAdd.jsx";
 import Header from "./HeaderDashboard.jsx";
-import { useNavigate } from "react-router-dom";
-import { useSelector } from "react-redux";
-import { useDispatch } from "react-redux";
-import { connect } from "react-redux";
 import { fetchProfile } from "../redux/profileActions";
 import ErrorModal from "../modals/ErrorModal.jsx";
 import { getUsers, getProfile } from "../apis/userapis.jsx";
+import SuccessModal from "../modals/SuccessModal.jsx";
 
 function Dashboard({ myProfile1 }) {
-    console.log({ myProfile1 });
-    // const navigate = useNavigate();
     const [users, setUsers] = useState([]);
     const [pagination, setPagination] = useState({
         page: 1,
@@ -30,11 +26,12 @@ function Dashboard({ myProfile1 }) {
     const [modalUser, setModalUser] = useState(null);
     const [modalUserAdd, setModalUserAdd] = useState(null);
     const [selectedRole, setSelectedRole] = useState("User");
-    const [profileModal, setProfileModal] = useState(false);
+    
     const [myProfile, setMyProfile] = useState(null);
     const token = Cookies.get("jwt_token");
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState("");
+    const [success, setSuccess] = useState("");
 
     const searchTimeout = useRef(null);
 
@@ -53,7 +50,7 @@ function Dashboard({ myProfile1 }) {
         })
             .then((data) => {
                 if (!data) return;
-                setUsers(data.data || []);
+                setUsers(data?.data || []);
                 setPagination({
                     page: data.current_page,
                     per_page: data.per_page,
@@ -65,7 +62,13 @@ function Dashboard({ myProfile1 }) {
                 //In case jwt token is expired or any other error
                 if (error.message === "SessionExpired") {
                     setError("Session expired. Please log in again.");
-                    window.location.href = "/login";
+                    fetch(`${process.env.REACT_APP_API_URL}/logout`, {
+                        method: "POST",
+                        headers: { Authorization: `Bearer ${token}` },
+                    });
+                    setTimeout(() => {
+                        window.location.href = "/login";
+                    }, 1000);
                 } else {
                     setError("An error occurred while fetching users.");
                 }
@@ -85,11 +88,6 @@ function Dashboard({ myProfile1 }) {
         }
     };
 
-    // const dispatch = useDispatch();
-    // useEffect(() => {
-    //     dispatch(fetchProfile());
-    // }, [dispatch]);
-
     // Fetch profile on mount
     useEffect(() => {
         fetchProfile();
@@ -98,8 +96,7 @@ function Dashboard({ myProfile1 }) {
     // Set cookie only when not loading and profile is available
     useEffect(() => {
         if (!isLoading && myProfile?.id) {
-            Cookies.set("userid", myProfile.id);
-            console.log(myProfile1);
+            Cookies.set("userid", myProfile?.id);
         }
     }, [isLoading, myProfile1]);
 
@@ -111,7 +108,7 @@ function Dashboard({ myProfile1 }) {
             sort: sortField,
             order: sortOrder,
         }).toString();
-        const url = `http://localhost:8000/exportCSV?${params}`;
+        const url = `${process.env.REACT_APP_API_URL}/exportCSV?${params}`;
 
         fetch(url, {
             method: "GET",
@@ -129,10 +126,10 @@ function Dashboard({ myProfile1 }) {
                 document.body.appendChild(link);
                 link.click();
                 link.parentNode.removeChild(link);
+                setSuccess("CSV downloaded successfully.");
             })
             .catch((error) => {
                 setError(error.message);
-                console.error(error);
             });
     };
 
@@ -191,17 +188,29 @@ function Dashboard({ myProfile1 }) {
     const handleDeleteUser = (id) => {
         if (!window.confirm("Are you sure you want to delete this user?"))
             return;
-        fetch(`http://localhost:8000/delUser/${id}`, {
+        fetch(`${process.env.REACT_APP_API_URL}/delUser/${id}`, {
             method: "DELETE",
             headers: { Authorization: `Bearer ${token}` },
-        }).then(() => fetchUsers());
+        })
+            .then(async (res) => {
+                const data = await res.json();
+                if (!res.ok) {
+                    setError(data.error || "Failed to delete user.");
+                } else {
+                    setSuccess(data.message || "User deleted successfully.");
+                    fetchUsers();
+                }
+            })
+            .catch((err) => {
+                setError("An error occurred while deleting the user.");
+            });
     };
 
     // Handle bulk delete of selected users with confirmation
     const handleBulkDelete = () => {
         if (!window.confirm("Delete selected users?")) return;
 
-        fetch("http://localhost:8000/bulkDelete", {
+        fetch(`${process.env.REACT_APP_API_URL}/bulkDelete`, {
             method: "DELETE",
             headers: {
                 "Content-Type": "application/json",
@@ -210,14 +219,15 @@ function Dashboard({ myProfile1 }) {
             body: JSON.stringify({ ids: selectedUsers }),
         })
             .then((res) =>
-                res.json().then((data) => ({ status: res.status, data }))
+                res.json().then((data) => ({ status: res?.status, data }))
             )
             .then(({ status, data }) => {
-                setError(data.message);
-                //alert(data.message || "Unknown response");
                 if (status === 200) {
                     setSelectedUsers([]);
                     fetchUsers();
+                    setSuccess("Users deleted successfully.");
+                } else {
+                    setError(data.message);
                 }
             })
             .catch((err) => {
@@ -233,7 +243,7 @@ function Dashboard({ myProfile1 }) {
         }
         if (!window.confirm("Change Roles of selected Users?")) return;
 
-        fetch("http://localhost:8000/bulkRole", {
+        fetch(`${process.env.REACT_APP_API_URL}/bulkRole`, {
             method: "PUT",
             headers: {
                 "Content-Type": "application/json",
@@ -249,24 +259,16 @@ function Dashboard({ myProfile1 }) {
                     // setError(data.message || "Users role changed.");
                     setSelectedUsers([]);
                     fetchUsers();
+                    setSuccess(
+                        data?.message || "Users roles changed successfully."
+                    );
                 } else {
-                    setError(data.error || "Failed to change user roles.");
+                    setError(data?.error || "Failed to change user roles.");
                 }
             })
             .catch((err) => {
                 setError("Bulk role assign failed. " + err.message);
             });
-    };
-
-    //logout function
-    const handleLogout = () => {
-        fetch("http://localhost:8000/logout", {
-            method: "POST",
-            headers: { Authorization: `Bearer ${token}` },
-        }).then(() => {
-            Cookies.remove("jwt_token");
-            window.location.href = "/login";
-        });
     };
 
     // Handle clearing all filters and resetting state
@@ -280,21 +282,21 @@ function Dashboard({ myProfile1 }) {
     };
 
     return (
-        <div class="apple">
+        <div className="apple">
             <Header user={myProfile} />
             <div>
-                <div class="filters-container">
+                <div className="filters-container">
                     {/* Search and filter */}
                     <input
                         placeholder="Search name/email"
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
-                        class="search-input"
+                        className="search-input"
                     />
                     <select
                         value={postFilter}
                         onChange={(e) => setPostFilter(e.target.value)}
-                        class="select-input"
+                        className="select-input"
                     >
                         <option value="">All Posts</option>
                         <option value="Master">Master</option>
@@ -306,7 +308,7 @@ function Dashboard({ myProfile1 }) {
 
                     <button
                         onClick={() => setModalUserAdd({})}
-                        class="add-user-btn"
+                        className="add-user-btn"
                         disabled={myProfile?.post === "User"}
                     >
                         Add User
@@ -314,7 +316,7 @@ function Dashboard({ myProfile1 }) {
 
                     <button
                         onClick={handleClearFilter}
-                        class="clear-filter-btn"
+                        className="clear-filter-btn"
                     >
                         Clear Filter
                     </button>
@@ -327,17 +329,17 @@ function Dashboard({ myProfile1 }) {
                                 sortOrder,
                             })
                         }
-                        class="export-csv-btn"
+                        className="export-csv-btn"
                     >
                         Export CSV
                     </button>
 
                     {/* Divider for bulk actions */}
                     {myProfile?.post !== "User" && selectedUsers.length > 0 && (
-                        <div class="btn-container">
+                        <div className="btn-container">
                             <button
                                 onClick={handleBulkDelete}
-                                class="bulk-delete-btn"
+                                className="bulk-delete-btn"
                                 disabled={myProfile?.post !== "Master"}
                             >
                                 Delete Selected
@@ -347,7 +349,7 @@ function Dashboard({ myProfile1 }) {
                                 onChange={(e) =>
                                     setSelectedRole(e.target.value)
                                 }
-                                class="select-input"
+                                className="select-input"
                             >
                                 <option value="" disabled>
                                     Select Role
@@ -358,7 +360,7 @@ function Dashboard({ myProfile1 }) {
                             </select>
                             <button
                                 onClick={handleBulkRole}
-                                class="export-csv-btn"
+                                className="export-csv-btn"
                                 disabled={
                                     !selectedRole || myProfile?.post === "User"
                                 }
@@ -370,7 +372,7 @@ function Dashboard({ myProfile1 }) {
                 </div>
 
                 {/* pagination control */}
-                <div class="users-pagination">
+                <div className="users-pagination">
                     <button
                         onClick={() =>
                             setPagination((p) => ({ ...p, page: 1 }))
@@ -452,18 +454,31 @@ function Dashboard({ myProfile1 }) {
                     </span>
                 </div>
 
-                <table border="1px solid black" class="users-table">
+                <table border="1px solid black" className="users-table">
                     <thead>
                         <tr>
                             <th hidden={myProfile?.post === "User"}>
                                 <input
                                     type="checkbox"
                                     checked={
+                                        selectedUsers.length > 0 &&
                                         selectedUsers.length ===
-                                        users.filter(
-                                            (u) => u.deleted_by === null
-                                        ).length
+                                            users.filter(
+                                                (u) => u.deleted_by === null
+                                            ).length
                                     }
+                                    ref={(el) => {
+                                        if (el) {
+                                            el.indeterminate =
+                                                selectedUsers.length > 0 &&
+                                                selectedUsers.length <
+                                                    users.filter(
+                                                        (u) =>
+                                                            u.deleted_by ===
+                                                            null
+                                                    ).length;
+                                        }
+                                    }}
                                     onChange={(e) =>
                                         handleSelectAll(e.target.checked)
                                     }
@@ -522,11 +537,6 @@ function Dashboard({ myProfile1 }) {
                         {users.map((user) => (
                             <tr
                                 key={user.id}
-                                style={{
-                                    background: selectedUsers.includes(user.id)
-                                        ? "#eef"
-                                        : undefined,
-                                }}
                                 onClick={() => setModalUser(user)}
                             >
                                 <td hidden={myProfile?.post === "User"}>
@@ -556,28 +566,117 @@ function Dashboard({ myProfile1 }) {
                                             ✔
                                         </span>
                                     ) : (
-                                        <div>
+                                        <div
+                                            style={{
+                                                display: "flex",
+                                                alignItems: "center",
+                                                gap: "0.5em",
+                                            }}
+                                        >
                                             <span style={{ color: "red" }}>
                                                 ✘
                                             </span>
+                                            {myProfile?.post === "Master" && (
+                                                <button
+                                                    className="user-action-btn edit-btn"
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        fetch(
+                                                            `${process.env.REACT_APP_API_URL}/masterVerify/${user.id}`,
+                                                            {
+                                                                method: "POST",
+                                                                headers: {
+                                                                    Authorization: `Bearer ${token}`,
+                                                                },
+                                                            }
+                                                        )
+                                                            .then((res) => {
+                                                                if (!res.ok) {
+                                                                    throw new Error(
+                                                                        "Failed to verify user."
+                                                                    );
+                                                                }
+                                                                return res.json();
+                                                            })
+                                                            .then((data) => {
+                                                                setSuccess(
+                                                                    data.message ||
+                                                                        "User verified successfully."
+                                                                );
+                                                                fetchUsers();
+                                                            })
+                                                            .catch((err) => {
+                                                                setError(
+                                                                    err.message ||
+                                                                        "An error occurred while verifying user."
+                                                                );
+                                                            });
+                                                    }}
+                                                >
+                                                    Verify
+                                                </button>
+                                            )}
                                         </div>
                                     )}
                                 </td>
                                 <td>
-                                    <span
-                                        style={{
-                                            padding: "2px 6px",
-                                            borderRadius: 4,
-                                            background:
-                                                user.deleted_by === null
-                                                    ? "#d4f7d4"
-                                                    : "#f7d4d4",
-                                        }}
-                                    >
-                                        {user.deleted_by !== null
-                                            ? "Deactivated"
-                                            : "Active"}
-                                    </span>
+                                    <div className="user-status">
+                                        <span
+                                            style={{
+                                                padding: "2px 6px",
+                                                borderRadius: 4,
+                                                background:
+                                                    user.deleted_by === null
+                                                        ? "#d4f7d4"
+                                                        : "#f7d4d4",
+                                            }}
+                                        >
+                                            {user.deleted_by !== null
+                                                ? "Deactivated"
+                                                : "Active"}
+                                        </span>
+                                        {user.deleted_by !== null &&
+                                            myProfile.post === "Master" && (
+                                                <button
+                                                    className="user-action-btn edit-btn"
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        fetch(
+                                                            `${process.env.REACT_APP_API_URL}/masterVerify/${user.id}`,
+                                                            {
+                                                                method: "POST",
+                                                                headers: {
+                                                                    Authorization: `Bearer ${token}`,
+                                                                },
+                                                            }
+                                                        )
+                                                            .then((res) => {
+                                                                if (!res.ok) {
+                                                                    throw new Error(
+                                                                        "Failed to verify user."
+                                                                    );
+                                                                }
+                                                                return res.json();
+                                                            })
+                                                            .then((data) => {
+                                                                setSuccess(
+                                                                    data.message ||
+                                                                        "User verified successfully."
+                                                                );
+                                                                fetchUsers();
+                                                            })
+                                                            .catch((err) => {
+                                                                setError(
+                                                                    err.message ||
+                                                                        "An error occurred while verifying user."
+                                                                );
+                                                            });
+                                                    }}
+                                                >
+                                                    Reactivate
+                                                </button>
+                                            )}
+                                    </div>
                                 </td>
                                 <td>
                                     {user.last_logout === null ? (
@@ -669,6 +768,12 @@ function Dashboard({ myProfile1 }) {
                     open={!!error}
                     message={error}
                     onClose={() => setError("")}
+                />
+
+                <SuccessModal
+                    open={!!success}
+                    message={success}
+                    onClose={() => setSuccess("")}
                 />
             </div>
         </div>

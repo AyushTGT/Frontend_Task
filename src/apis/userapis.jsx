@@ -1,6 +1,4 @@
 import Cookies from "js-cookie";
-const BASE_URL = "http://localhost:8000";
-
 
 //Api call to get user details
 export async function getUsers({
@@ -21,7 +19,7 @@ export async function getUsers({
     const params = new URLSearchParams(filteredParams);
     const token = Cookies.get("jwt_token");
 
-    const res = await fetch(`http://localhost:8000/getUsers?${params.toString()}`, {
+    const res = await fetch(`${process.env.REACT_APP_API_URL}/getUsers?${params.toString()}`, {
         headers: { Authorization: `Bearer ${token}` },
     });
 
@@ -36,7 +34,7 @@ export async function getUsers({
 //Api call to get user details for profile using token
 export async function getProfile() {
     const token = Cookies.get("jwt_token");
-    const res = await fetch(`http://localhost:8000/me`, {
+    const res = await fetch(`${process.env.REACT_APP_API_URL}/me`, {
         method: "GET",
         headers: {
             "Content-Type": "application/json",

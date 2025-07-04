@@ -1,8 +1,7 @@
-import React from "react";
 import RegistrationForm from "./Registration";
 import { useNavigate } from "react-router-dom";
-import Header from "./Header";
 import { useState } from "react";
+import Header from "./Header";
 import "./Dashboard.css";
 import ErrorModal from "../modals/ErrorModal";
 import SuccessModal from "../modals/SuccessModal";
@@ -19,7 +18,7 @@ export default function RegisterPage() {
 
         try {
             const response = await fetch(
-                `http://localhost:8000/checkEmail?email=${encodeURIComponent(
+                `${process.env.REACT_APP_API_URL}/checkEmail?email=${encodeURIComponent(
                     email
                 )}`
             );
@@ -32,14 +31,18 @@ export default function RegisterPage() {
 
             if (emailExists.exists && emailExists.verified === true) {
                 setError("Already registered with this email. Please login.");
-                navigate("/login");
+                setTimeout(() => {
+                    navigate("/login");
+                }, 5000);
                 setIsLoading(false);
                 return;
             } else if (emailExists.exists && emailExists.verified === false) {
                 setError(
                     "Email is not verified. Please verify your email first and login."
                 );
-                navigate("/login");
+                setTimeout(() => {
+                    navigate("/login");
+                }, 5000);
                 setIsLoading(false);
                 return;
             }
@@ -51,7 +54,7 @@ export default function RegisterPage() {
             data.append("post", role);
 
             const regResponse = await fetch(
-                "http://localhost:8000/RegisteringUser",
+                `${process.env.REACT_APP_API_URL}/RegisteringUser`,
                 {
                     method: "POST",
                     body: data,
@@ -62,11 +65,10 @@ export default function RegisterPage() {
                 throw new Error("Registration failed");
             }
             const result = await regResponse.json();
-            setError(
-                "Registration successful!\n" + JSON.stringify(result.message)
-            );
             setSuccess("Registration successful! Please check your email for verification.");
-            navigate("/login");
+            setTimeout(() => {
+                    navigate("/login");
+                }, 5000);
         } catch (error) {
             setError(
                 "Error during registration: " + JSON.stringify(error.message)
@@ -78,19 +80,11 @@ export default function RegisterPage() {
 
     return (
         <div
-            style={{
-                display: "flex",
-                flexDirection: "column",
-                gap: "40px",
-                background: "linear-gradient(120deg, #e0eafc, #cfdef3)",
-            }}
+            className="contain"
         >
             <Header />
             <div
-                style={{
-                    minHeight: "100vh",
-                    background: "linear-gradient(120deg, #e0eafc, #cfdef3)",
-                }}
+                style={{minHeight: "100vh"}}
             >
                 <RegistrationForm onSubmit={handleFormSubmit} />
 

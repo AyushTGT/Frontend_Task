@@ -1,17 +1,15 @@
-import React from "react";
 import Header from "./Header"; 
+import "./Dashboard.css";
 
 const TermsAndConditions = () => (
     <div
-        style={{
-            display: "flex",
-            flexDirection: "column",
-            gap: "40px",
-            background: "linear-gradient(120deg, #e0eafc, #cfdef3)",
-        }}
+        className="contain"
     >
         <Header />
-        <div className="terms-container">
+        <div
+            className="terms"
+            
+        >
             <h1>Terms and Conditions</h1>
             <p>
                 Welcome to our application. Please read these terms and
@@ -23,7 +21,14 @@ const TermsAndConditions = () => (
             <h2>2. Contact Us</h2>
             <p>
                 If you have any questions about these terms, please contact us
-                at ayush.tomar@vmock.com.
+                at{" "}
+                <a
+                    href="mailto:ayush.tomar@vmock.com"
+                    className="terms-email-link"
+                >
+                    ayush.tomar@vmock.com
+                </a>
+                .
             </p>
         </div>
     </div>

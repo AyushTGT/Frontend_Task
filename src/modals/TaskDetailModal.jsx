@@ -1,5 +1,31 @@
 import React, { useEffect, useRef, useState } from "react";
 
+const modalStyles = {
+    position: "fixed",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    background: "rgba(0,0,0,0.35)",
+    zIndex: 1111,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+};
+const internalStyles = {
+    background: "#fff",
+    padding: 32,
+    borderRadius: 16,
+    minWidth: 400,
+    maxWidth: 500,
+};
+const lastStyles = {
+    marginTop: 24,
+    display: "flex",
+    gap: 8,
+    justifyContent: "flex-end",
+};
+
 export default function TaskDetailModal({
     open,
     onClose,
@@ -12,7 +38,7 @@ export default function TaskDetailModal({
     const [editing, setEditing] = useState(false);
     const modalRef = useRef(null);
 
-    useEffect(() => {    
+    useEffect(() => {
         function handleClick(event) {
             if (modalRef.current && !modalRef.current.contains(event.target)) {
                 onClose();
@@ -51,30 +77,8 @@ export default function TaskDetailModal({
     };
 
     return (
-        <div
-            style={{
-                position: "fixed",
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0,
-                background: "rgba(0,0,0,0.35)",
-                zIndex: 1111,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-            }}
-        >
-            <div
-                ref={modalRef}
-                style={{
-                    background: "#fff",
-                    padding: 32,
-                    borderRadius: 16,
-                    minWidth: 400,
-                    maxWidth: 500,
-                }}
-            >
+        <div style={{ modalStyles }}>
+            <div ref={modalRef} style={{ internalStyles }}>
                 <h2>Task Details</h2>
                 <div
                     style={{
@@ -201,13 +205,10 @@ export default function TaskDetailModal({
                     </label>
                     <label>
                         Created by:
-                        {
-                            userOptions
-                                        ? userOptions.find(
-                                              (u) => u.id === form.created_by
-                                          )?.name || ""
-                                        : form.created_by || ""
-                        }
+                        {userOptions
+                            ? userOptions.find((u) => u.id === form.created_by)
+                                  ?.name || ""
+                            : form.created_by || ""}
                         {/* {editing ? 
                             <input
                                 name="created_by"
@@ -231,38 +232,37 @@ export default function TaskDetailModal({
                     <label>
                         Assignee:
                         {editing ? (
-    <select
-      name="assignee"
-      value={
-        form.assignee === null || form.assignee === undefined
-          ? ""
-          : form.assignee
-      }
-      onChange={(e) => {
-        setForm((prev) => ({
-          ...prev,
-          assignee:
-            e.target.value === ""
-              ? null
-              : e.target.value,
-        }));
-      }}
-      disabled={
-        !editing ||
-        !(user && user.id === form.created_by)
-      }
-    >
-      <option value="">
-        Unassigned
-      </option>
-      {userOptions &&
-        userOptions.map((user) => (
-          <option key={user.id} value={user.id}>
-            {user.name}
-          </option>
-        ))}
-    </select>
-  ) : userOptions ? (
+                            <select
+                                name="assignee"
+                                value={
+                                    form.assignee === null ||
+                                    form.assignee === undefined
+                                        ? ""
+                                        : form.assignee
+                                }
+                                onChange={(e) => {
+                                    setForm((prev) => ({
+                                        ...prev,
+                                        assignee:
+                                            e.target.value === ""
+                                                ? null
+                                                : e.target.value,
+                                    }));
+                                }}
+                                disabled={
+                                    !editing ||
+                                    !(user && user.id === form.created_by)
+                                }
+                            >
+                                <option value="">Unassigned</option>
+                                {userOptions &&
+                                    userOptions.map((user) => (
+                                        <option key={user.id} value={user.id}>
+                                            {user.name}
+                                        </option>
+                                    ))}
+                            </select>
+                        ) : userOptions ? (
                             userOptions.find((u) => u.id === form.assignee)
                                 ?.name ||
                             (form.assignee === null ||
@@ -277,14 +277,7 @@ export default function TaskDetailModal({
                         )}
                     </label>
                 </div>
-                <div
-                    style={{
-                        marginTop: 24,
-                        display: "flex",
-                        gap: 8,
-                        justifyContent: "flex-end",
-                    }}
-                >
+                <div style={{ lastStyles }}>
                     {!editing && <button onClick={handleEdit}>Edit</button>}
                     {editing && (
                         <>

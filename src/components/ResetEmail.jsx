@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import "./register.css";
 import { Link } from "react-router-dom";
+import "./register.css";
 
 const initialState = {
   email: "",

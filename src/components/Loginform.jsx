@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import "./register.css";
 import { useSelector, useDispatch } from "react-redux";
 import {
@@ -59,7 +59,6 @@ export default function Loginform({ onSubmit }) {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        console.log(form);
 
         if (!form.recaptchaToken) {
             alert("Please complete the CAPTCHA.");
@@ -72,19 +71,21 @@ export default function Loginform({ onSubmit }) {
                 await onSubmit(form);
                 dispatch(resetLoginForm());
             } catch (err) {
+                alert("Login failed: " + err.message);
             } finally {
                 dispatch(setLoginLoading(false));
             }
         }
     };
 
-    const isFormValid = () => {
+    const isFormValid = useMemo(() => {
         return (
             form.email &&
             /^\S+@\S+\.\S+$/.test(form.email) &&
             form.password.length > 0
+            
         );
-    };
+    }, [form.email, form.password]);
 
     return (
         <form
@@ -135,7 +136,7 @@ export default function Loginform({ onSubmit }) {
 
             <button
                 type="submit"
-                disabled={!isFormValid() || isLoading}
+                disabled={!isFormValid || isLoading}
                 className="submit-btn"
             >
                 {isLoading ? "Logging in..." : "Login"}

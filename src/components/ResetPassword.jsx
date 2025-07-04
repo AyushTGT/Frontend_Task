@@ -1,8 +1,8 @@
-import React from "react";
 import { useNavigate } from "react-router-dom";
 import ResetForm from "./ResetPassForm";
 import { useLocation } from "react-router-dom";
 import Header from "./Header";
+import "./Dashboard.css";
 
 
 export default function ResetPassword() {
@@ -20,7 +20,7 @@ export default function ResetPassword() {
             data.append("email", email);
 
             const regResponse = await fetch(
-                "http://localhost:8000/resetPassword",
+                `${process.env.REACT_APP_API_URL}/resetPassword`,
                 {
                     method: "POST",
                     body: data,
@@ -31,31 +31,23 @@ export default function ResetPassword() {
             }
             const result = await regResponse.json();
             alert(
-                "Passroed Reset successful!\n" + JSON.stringify(result.message)
+                "Password Reset successful!\n"
             );
             navigate("/login");
         } catch (error) {
             alert(
-                "Error during Password Reset: " + JSON.stringify(error.message)
+                "Error during Password Reset: " + (error.message || "Unknown error")
             );
         }
     };
 
     return (
         <div
-            style={{
-                display: "flex",
-                flexDirection: "column",
-                gap: "40px",
-                background: "linear-gradient(120deg, #e0eafc, #cfdef3)",
-            }}
+            className="contain"
         >
             <Header />
             <div
-                style={{
-                    minHeight: "100vh",
-                    background: "linear-gradient(120deg, #e0eafc, #cfdef3)",
-                }}
+                style={{ minHeight: "100vh"}}
             >
                 <ResetForm onSubmit={handleFormSubmit} />
             </div>

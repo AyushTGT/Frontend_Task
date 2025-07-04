@@ -1,5 +1,5 @@
 import Cookies from "js-cookie";
-const BASE_URL = "http://localhost:8000";
+const BASE_URL = `${process.env.REACT_APP_API_URL}/`;
 
 export async function fetchTaskCount(params = {}) {
     // Build query string from params object
@@ -59,20 +59,6 @@ export async function userDetails() {
     return data;
 }
 
-// export async function overDue() {
-//     const token = Cookies.get("jwt_token");
-//     const url = `${BASE_URL}/overdueTasks`;
-
-//     const response = await fetch(url, {
-//         headers: {
-//             Accept: "application/json",
-//             Authorization: `Bearer ${token}`,
-//         },
-//     });
-//     if (!response.ok) throw new Error("Failed to fetch overdue tasks");
-//     const data = await response.json();
-//     return data.count;
-// }   
 
 export async function thisMonth(params = {}) {
     const token = Cookies.get("jwt_token");

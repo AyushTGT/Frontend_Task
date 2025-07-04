@@ -104,16 +104,15 @@ export default function AddTaskModal({
             return;
         }
         setError("");
-        //console.log("Form submitted:", form.created_by, form);
         onSave(form);
     };
 
     
 
     return (
-        <div class="modal-backdrop" >
+        <div className="modal-backdrop" >
             <div
-                class="modal"
+                className="modal"
                 ref={modalRef}
                 >
                 <h2>Add Task</h2>

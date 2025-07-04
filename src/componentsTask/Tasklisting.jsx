@@ -9,6 +9,22 @@ import SuccessModal from "../modals/SuccessModal";
 
 //Taks listing component from kanban listing page
 
+const addStyle = {
+    width: "100%",
+    minHeight: "70px",
+    background: "#fff",
+    borderRadius: "32px",
+    display: "flex",
+    justifyContent: "center",
+    marginBottom: "32px",
+    boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
+    cursor: "pointer",
+    fontSize: "48px",
+    color: "#888",
+    transition: "box-shadow 0.2s",
+    border: "2px dashed #ddd",
+};
+
 export default function Tasklisting() {
     const [user, setUser] = useState(null);
     const [userError, setUserError] = useState(null);
@@ -16,11 +32,10 @@ export default function Tasklisting() {
     const [reporterOptions, setReporterOptions] = useState([]);
     const [success, setSuccess] = useState(null);
     const token = Cookies.get("jwt_token");
-    
 
     useEffect(() => {
         axios
-            .get("http://localhost:8000/userName", {
+            .get(`${process.env.REACT_APP_API_URL}/userName`, {
                 headers: { Authorization: `Bearer ${token}` },
             })
             .then((res) => {
@@ -45,30 +60,12 @@ export default function Tasklisting() {
         <div style={{ flex: 1, background: "#f5f6fa", padding: "24px" }}>
             <Header user={user} />
             <div
-                style={{
-                    width: "100%",
-                    minHeight: "70px",
-                    background: "#fff",
-                    borderRadius: "32px",
-                    display: "flex",
-                    justifyContent: "center",
-                    marginBottom: "32px",
-                    boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
-                    cursor: "pointer",
-                    fontSize: "48px",
-                    color: "#888",
-                    transition: "box-shadow 0.2s",
-                    border: "2px dashed #ddd",
-                }}
+                style={{ addStyle }}
                 onClick={() => setAddTaskOpen(true)}
                 title="Add Task"
             >
                 <span
-                    style={{
-                        fontSize: "64px",
-                        fontWeight: "bold",
-                        lineHeight: 1,
-                    }}
+                    style={{fontSize: "64px", fontWeight: "bold", lineHeight: 1}}
                 >
                     +
                 </span>
@@ -85,7 +82,7 @@ export default function Tasklisting() {
                     onSave={async (form) => {
                         try {
                             await axios.post(
-                                "http://localhost:8000/addTask",
+                                `${process.env.REACT_APP_API_URL}/addTask`,
                                 form,
                                 {
                                     headers: {
@@ -99,7 +96,6 @@ export default function Tasklisting() {
                             setTimeout(() => {
                                 window.location.reload();
                             }, 1000);
-                            
                         } catch (err) {
                             console.error("Error adding task:", err);
                             alert(

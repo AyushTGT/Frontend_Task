@@ -1,13 +1,13 @@
 import React, { useEffect, useRef, useState } from "react";
 import Cookies from "js-cookie";
-import "../components/Dashboard.css";
 import axios from "axios";
-import Header from "./Header";
 import { useNavigate } from "react-router-dom";
+import "../components/Dashboard.css";
+import Header from "./Header";
 import AddTaskModal from "../modals/AddTaskModal";
 import TaskDetailModal from "../modals/TaskDetailModal";
 import ErrorModal from "../modals/ErrorModal";
-import Select from "react-select";
+import SuccessModal from "../modals/SuccessModal";
 
 //task page listing same as user listing with search paramters and filters
 
@@ -29,6 +29,7 @@ export default function AllTasks() {
     const searchTimeout = useRef(null);
     const [addTaskOpen, setAddTaskOpen] = useState(false);
     const [error, setError] = useState("");
+    const [success, setSuccess] = useState("");
 
     // New states for dropdown filters
     const [reporterOptions, setReporterOptions] = useState([]);
@@ -41,11 +42,30 @@ export default function AllTasks() {
     const [modalTask, setModalTask] = useState(null);
     const [taskDetailOpen, setTaskDetailOpen] = useState(false);
     const [dueDateStart, setDueDateStart] = useState("");
-    const [dueDateEnd, setDueDateEnd] = useState("");
+    const [dueDateEnd, setDueDateEnd] = useState("")
+    
+
+    const getStatusClass = (status) => {
+        const statusLower = status?.toLowerCase();
+        switch(statusLower) {
+            case 'pending':
+                return 'status-pending';
+            case 'completed':
+                return 'status-completed';
+            case 'unassigned':
+                return 'status-unassigned';
+            case 'cancelled':
+                return 'status-cancelled';
+            case 'overdue':
+                return 'status-overdue';
+            default:
+                return 'status-default';
+        }
+    };
 
     useEffect(() => {
         axios
-            .get("http://localhost:8000/userName", {
+            .get(`${process.env.REACT_APP_API_URL}/userName`, {
                 headers: { Authorization: `Bearer ${token}` },
             })
             .then((res) => {
@@ -82,13 +102,16 @@ export default function AllTasks() {
 
         const params = new URLSearchParams(filteredParams);
 
-        fetch(`http://localhost:8000/filterTasks?${params.toString()}`, {
+        fetch(`${process.env.REACT_APP_API_URL}/filterTasks?${params.toString()}`, {
             headers: { Authorization: `Bearer ${token}` },
         })
             .then((res) => {
                 if (res.status === 401) {
                     setError("Session expired. Please log in again.");
-                    window.location.href = "/login";
+                    setTimeout(() => {
+                        window.location.href = "/login";
+                    }, 5000);
+                    
                     return;
                 }
                 return res.json();
@@ -108,7 +131,7 @@ export default function AllTasks() {
 
     // Profile fetch (unchanged)
     const fetchProfile = () => {
-        fetch(`http://localhost:8000/me`, {
+        fetch(`${process.env.REACT_APP_API_URL}/me`, {
             method: "GET",
             headers: {
                 "Content-Type": "application/json",
@@ -118,7 +141,10 @@ export default function AllTasks() {
             .then((res) => {
                 if (res.status === 401) {
                     setError("Session ended. Please log in again.");
-                    window.location.href = "/login";
+                    setTimeout(() => {
+                        window.location.href = "/login";
+                    }, 5000);
+                    
                     return null;
                 }
                 return res.json();
@@ -195,7 +221,7 @@ export default function AllTasks() {
     const handleTaskUpdate = async (updatedTask) => {
         try {
             await axios.put(
-                `http://localhost:8000/updateTask/${updatedTask.id}`,
+                `${process.env.REACT_APP_API_URL}/updateTask/${updatedTask.id}`,
                 updatedTask,
                 {
                     headers: {
@@ -205,6 +231,7 @@ export default function AllTasks() {
             );
             setTaskDetailOpen(false);
             fetchUsers();
+            setSuccess("Task updated successfully!");
         } catch (err) {
             setError(
                 "Error updating task: " +
@@ -222,19 +249,19 @@ export default function AllTasks() {
 
     // UI
     return (
-        <div class="apple">
+        <div className="apple">
             <Header user={myProfile} />
             <div>
-                <div class="filters-container">
+                <div className="filters-container">
                     <input
                         placeholder="Search task"
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
-                        class="search-input"
+                        className="search-input"
                     />
                     <select
                         value={reporterFilter}
-                        class="select-input"
+                        className="select-input"
                         onChange={(e) => setReporterFilter(e.target.value)}
                     >
                         <option value="">All Reporters</option>
@@ -244,30 +271,10 @@ export default function AllTasks() {
                             </option>
                         ))}
                     </select>
-                    {/* <Select
-                        value={selectOptions.find(
-                            (option) => option.value === reporterFilter
-                        )}
-                        onChange={(selectedOption) =>
-                            setReporterFilter(selectedOption?.value || "")
-                        }
-                        options={selectOptions}
-                        isSearchable={true}
-                        placeholder="Search reporters..."
-                        noOptionsMessage={() => "No reporters found"}
-                        class="select-input"
-                        styles={{
-                            container: (provided) => ({
-                                ...provided,
-                                width: "150px",
-                                minWidth: "150px",
-                                maxWidth: "150px", 
-                            }),
-                        }}
-                    /> */}
+                    
                     <select
                         value={assignedByFilter}
-                        class="select-input"
+                        className="select-input"
                         onChange={(e) => setAssignedByFilter(e.target.value)}
                     >
                         <option value="">All Assigned By</option>
@@ -279,7 +286,7 @@ export default function AllTasks() {
                     </select>
                     <select
                         value={selectedStatus}
-                        class="select-input"
+                        className="select-input"
                         onChange={(e) => setSelectedStatus(e.target.value)}
                     >
                         <option value="">All Status</option>
@@ -290,7 +297,7 @@ export default function AllTasks() {
                     </select>
                     <select
                         value={selectedPriority}
-                        class="select-input"
+                        className="select-input"
                         onChange={(e) => setSelectedPriority(e.target.value)}
                     >
                         <option value="">All Priority</option>
@@ -300,7 +307,7 @@ export default function AllTasks() {
                     </select>
                     <select
                         value={assigneeFilter}
-                        class="select-input"
+                        className="select-input"
                         onChange={(e) => setAssigneeFilter(e.target.value)}
                     >
                         <option value="">All Assignees</option>
@@ -314,7 +321,7 @@ export default function AllTasks() {
                     <input
                         type="date"
                         value={dueDateStart}
-                        class="search-input"
+                        className="search-input"
                         onChange={(e) => setDueDateStart(e.target.value)}
                         placeholder="Due date start"
                         style={{ minWidth: 120 }}
@@ -322,27 +329,27 @@ export default function AllTasks() {
                     <input
                         type="date"
                         value={dueDateEnd}
-                        class="search-input"
+                        className="search-input"
                         onChange={(e) => setDueDateEnd(e.target.value)}
                         placeholder="Due date end"
                         style={{ minWidth: 120 }}
                     />
 
                     <button
-                        class="add-user-btn"
+                        className="add-user-btn"
                         onClick={() => setAddTaskOpen(true)}
                     >
                         Add Task
                     </button>
                     <button
-                        class="clear-filter-btn"
+                        className="clear-filter-btn"
                         onClick={handleClearFilter}
                     >
                         Clear Filter
                     </button>
                 </div>
 
-                <div class="users-pagination">
+                <div className="users-pagination">
                     <button
                         onClick={() =>
                             setPagination((p) => ({ ...p, page: 1 }))
@@ -428,7 +435,7 @@ export default function AllTasks() {
                     border="1"
                     cellPadding="8"
                     style={{ width: "100%", borderCollapse: "collapse" }}
-                    class="users-table"
+                    className="users-table"
                 >
                     <thead>
                         <tr>
@@ -462,36 +469,32 @@ export default function AllTasks() {
                         {users.map((user) => (
                             <tr
                                 key={user.id}
-                                // style={{
-
-                                //     background: selectedUsers.includes(user.id)
-                                //         ? "#eef"
-                                //         : undefined,
-                                // }}
                                 onClick={() => handleRowClick(user)}
                             >
                                 <td>{user.title}</td>
-                                <td>{user.status}</td>
                                 <td>
-                                    {user.start_date
-                                        ? new Date(
-                                              user.start_date
-                                          ).toLocaleDateString()
-                                        : ""}
+                                    <span className={getStatusClass(user.status)}>
+                                        {user.status}
+                                    </span>
                                 </td>
                                 <td>
-                                    {user.due_date
-                                        ? new Date(
-                                              user.due_date
-                                          ).toLocaleDateString()
+                                    {user.start_date
+                                        ? new Date(user.start_date + 'T00:00:00').toLocaleDateString('en-US', {
+                                            year: 'numeric',
+                                            month: 'short',
+                                            day: 'numeric'
+                                        })
                                         : ""}
+                                </td>
+                                <td >
+                                   { user.due_date}
                                 </td>
                                 <td>
                                     <span
                                         className={`priority-tag ${
-                                            user.priority === "high"
+                                            user.priority === "High"
                                                 ? "priority-high"
-                                                : user.priority === "medium"
+                                                : user.priority === "Medium"
                                                 ? "priority-medium"
                                                 : "priority-low"
                                         }`}
@@ -522,26 +525,6 @@ export default function AllTasks() {
                     </tbody>
                 </table>
 
-                {/* Pagination controls */}
-
-                {/* <UserModal
-                    user={modalUser}
-                    onClose={() => setModalUser(null)}
-                    onSave={(updatedUser) => {
-                        setModalUser(null);
-                        fetchUsers();
-                    }}
-                />
-
-                <UserModalAdd
-                    user={modalUserAdd}
-                    onClose={() => setModalUserAdd(null)}
-                    onSave={(updatedUser) => {
-                        setModalUserAdd(null);
-                        fetchUsers();
-                    }}
-                /> */}
-
                 <AddTaskModal
                     open={addTaskOpen}
                     onClose={() => {
@@ -552,7 +535,7 @@ export default function AllTasks() {
                     onSave={async (form) => {
                         try {
                             await axios.post(
-                                "http://localhost:8000/addTask",
+                                `${process.env.REACT_APP_API_URL}/addTask`,
                                 form,
                                 {
                                     headers: {
@@ -562,9 +545,8 @@ export default function AllTasks() {
                             );
                             setAddTaskOpen(false);
                             fetchUsers();
-                            //resetForm(); // Call resetForm if provided
+                            setSuccess("Task added successfully!");
                         } catch (err) {
-                            //console.error("Error adding task:", err);
                             setError(
                                 "Error adding task: " +
                                     (err.response?.data?.message || err.message)
@@ -572,27 +554,7 @@ export default function AllTasks() {
                         }
                     }}
                 />
-                {/* try {
-                            await axios.post(
-                                "http://localhost:8000/addTask",
-                                form,
-                                {
-                                    headers: {
-                                        Authorization: `Bearer ${token}`,
-                                    },
-                                }
-                            );
-                            setAddTaskOpen(false);
-                            fetchUsers();
-                        } catch (err) {
-                            alert(
-                                "Error adding task: " +
-                                    (err.response?.data?.message || err.message)
-                            );
-                        }
-                    }}
-                /> */}
-
+                
                 <ErrorModal
                     open={!!error}
                     message={error}
@@ -607,6 +569,13 @@ export default function AllTasks() {
                     userOptions={reporterOptions}
                     user={myProfile}
                 />
+
+                <SuccessModal
+                    open={!!success}
+                    message={success}
+                    onClose={() => setSuccess("")}
+                />
+
             </div>
         </div>
     );

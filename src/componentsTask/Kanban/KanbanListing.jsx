@@ -43,7 +43,7 @@ export function TasksListPage({ user }) {
 
     useEffect(() => {
         axios
-            .get("http://localhost:8000/userName", {
+            .get(`${process.env.REACT_APP_API_URL}/userName`, {
                 headers: { Authorization: `Bearer ${token}` },
             })
             .then((res) => {
@@ -54,7 +54,7 @@ export function TasksListPage({ user }) {
 
     async function fetchTasks() {
         try {
-            const response = await fetch("http://localhost:8000/getTasks", {
+            const response = await fetch(`${process.env.REACT_APP_API_URL}/getTasks`, {
                 method: "GET",
                 headers: { Authorization: `Bearer ${token}` },
             });
@@ -102,7 +102,7 @@ export function TasksListPage({ user }) {
     const handleTaskUpdate = async (updatedTask) => {
         try {
             await axios.put(
-                `http://localhost:8000/updateTask/${updatedTask.id}`,
+                `${process.env.REACT_APP_API_URL}/updateTask/${updatedTask.id}`,
                 updatedTask,
                 {
                     headers: {
@@ -144,7 +144,7 @@ export function TasksListPage({ user }) {
         if (updatedTask && updatedTask.stageId !== newStageId) {
             axios
                 .put(
-                    `http://localhost:8000/updateTaskStatus/${taskId}`,
+                    `${process.env.REACT_APP_API_URL}/updateTaskStatus/${taskId}`,
                     {
                         ...updatedTask._raw,
                         status: newStageId,

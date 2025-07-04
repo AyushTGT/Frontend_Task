@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect } from "react";
 import Cookies from "js-cookie";
 import { UserOutlined } from "@ant-design/icons";
 import "./Dashboard.css";
@@ -14,51 +14,11 @@ export default function ProfileButton() {
     const popupRef = useRef(null);
     const token = Cookies.get("jwt_token");
 
-    const buttonStyle = {
-        border: "none",
-        background: "#eee",
-        borderRadius: "50%",
-        width: 44,
-        height: 44,
-        cursor: "pointer",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        fontSize: "1.5rem",
-        position: "relative",
-        zIndex: 2,
-    };
-
-    const profileStyle = {
-        position: "absolute",
-        top: 50,
-        right: 0,
-        border: "1px solid #ddd",
-        borderRadius: "8px",
-        padding: "20px",
-        background: "#f9f9f9",
-        width: "300px",
-        boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
-        marginTop: "10px",
-        zIndex: 10,
-    };
-
-    const logoutStyle = {
-        backgroundColor: "#f44336",
-        color: "white",
-        padding: "8px 16px",
-        border: "none",
-        borderRadius: "5px",
-        cursor: "pointer",
-        fontSize: "14px",
-        marginTop: "15px",
-    };
-
     const fetchUser = async () => {
         setLoading(true);
         setError(null);
         try {
-            const res = await fetch("http://localhost:8000/me", {
+            const res = await fetch(`${process.env.REACT_APP_API_URL}/me`, {
                 headers: {
                     Authorization: `Bearer ${token}`,
                 },
@@ -75,7 +35,7 @@ export default function ProfileButton() {
     };
 
     const handleLogout = () => {
-        fetch("http://localhost:8000/logout", {
+        fetch(`${process.env.REACT_APP_API_URL}/logout`, {
             method: "POST",
             headers: { Authorization: `Bearer ${token}` },
         }).then(() => {
@@ -92,7 +52,7 @@ export default function ProfileButton() {
         ) {
             return;
         }
-        fetch(`http://localhost:8000/delUser/${id}`, {
+        fetch(`${process.env.REACT_APP_API_URL}/delUser/${id}`, {
             method: "DELETE",
             headers: { Authorization: `Bearer ${token}` },
         }).then(() => {
@@ -115,7 +75,7 @@ export default function ProfileButton() {
 
     return (
         <div style={{ position: "relative", display: "inline-block" }}>
-            <button class="button-style"  onClick={fetchUser} disabled={loading}>
+            <button className="button-style"  onClick={fetchUser} disabled={loading}>
                 <span role="img" aria-label="profile">
                     <UserOutlined />
                 </span>
@@ -124,7 +84,7 @@ export default function ProfileButton() {
                 <div style={{ color: "red", marginTop: "10px" }}>{error}</div>
             )}
             {showProfile && user && (
-                <div ref={popupRef} class="profile-style" >
+                <div ref={popupRef} className="profile-style" >
                     <h2 style={{ margin: "0 0 10px 0" }}>{user.name}</h2>
                     <p>
                         <strong>Email:</strong> {user.email}
@@ -146,11 +106,11 @@ export default function ProfileButton() {
                         <strong>Total Duration:</strong>{" "}
                         {user.total_duration_loggedin}
                     </p>
-                    <button class="logout-style" onClick={handleLogout}>
+                    <button className="logout-style" onClick={handleLogout}>
                         Logout
                     </button>
                     <button
-                        class="logout-style"
+                        className="logout-style"
                         style={{ marginLeft: "10px" }}
                         onClick={(e) => {
                             e.stopPropagation();

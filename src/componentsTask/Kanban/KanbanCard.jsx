@@ -18,7 +18,6 @@ function CustomAvatar({ name}) {
         .map((n) => n[0])
         .join("")
         .toUpperCase();
-        console.log("name", id);
     return (
         <span className="user-avatar" title={name.name} style={{ backgroundColor: id==name.id ? "#4CAF50" : "#e53935" }}>
             {initials}

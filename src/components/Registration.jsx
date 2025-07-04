@@ -1,7 +1,6 @@
-import React, { useState } from "react";
-import "./register.css";
 import { Link } from "react-router-dom";
 import { reduxForm, Field } from "redux-form";
+import "./register.css";
 
 const roles = ["User", "Master", "Admin"];
 

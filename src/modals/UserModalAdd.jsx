@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
 import Cookies from "js-cookie";
-import "../components/Dashboard.css"; // Assuming you have a CSS file for styles
+import "../components/Dashboard.css";
+import ErrorModal from "./ErrorModal";
+import SuccessModal from "./SuccessModal";
 
 
 //Modal for adding a new user
@@ -13,9 +15,23 @@ function UserModalAdd({ user, onClose, onSave }) {
     const [emailError, setEmailError] = useState("");
     const [nameError, setNameError] = useState("");
     const token = Cookies.get("jwt_token");
+    const [error, setError] = useState("");
+    const [success, setSuccess] = useState("");
 
     useEffect(() => {
-        setForm(user && typeof user === "object" ? user : { name: "", email: "", post: "User" });
+        if (user && typeof user === "object") {
+            setForm({
+                name: user.name || "",
+                email: user.email || "",
+                post: user.post || "User" 
+            });
+        } else {
+            setForm({ 
+                name: "", 
+                email: "", 
+                post: "User" 
+            });
+        }
     }, [user]);
 
     if (!user) return null;
@@ -49,7 +65,7 @@ function UserModalAdd({ user, onClose, onSave }) {
         try {
             // First check if email exists
             const checkRes = await fetch(
-            `http://localhost:8000/checkEmail?email=${encodeURIComponent(form.email)}`,
+            `${process.env.REACT_APP_API_URL}/checkEmail?email=${encodeURIComponent(form.email)}`,
             {
                 method: "GET",
                 headers: {
@@ -60,12 +76,12 @@ function UserModalAdd({ user, onClose, onSave }) {
             );
             const checkData = await checkRes.json();
             if (checkData.exists) {
-            alert("Email already in use");
+            setError("Email already in use");
             return;
             }
 
             // If not exists, proceed to add user
-            const res = await fetch(`http://localhost:8000/addUser`, {
+            const res = await fetch(`${process.env.REACT_APP_API_URL}/addUser`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -73,10 +89,18 @@ function UserModalAdd({ user, onClose, onSave }) {
                 },
                 body: JSON.stringify(form),
             });
+
             const data = await res.json();
+
+            if (!res.ok) {
+                setError(data.message || "Failed to add user. Please try again.");
+                return;
+            }
+
+            setSuccess(data.message || "User added successfully.");
             onSave(data);
         } catch (err) {
-            alert("An error occurred. Please try again.");
+            setError(err || "An error occurred. Please try again.");
         }
     };
 
@@ -148,6 +172,19 @@ function UserModalAdd({ user, onClose, onSave }) {
                         </button>
                     </div>
                 </form>
+
+
+                <ErrorModal
+                    open={!!error}
+                    message={error}
+                    onClose={() => setError("")}
+                />      
+
+                <SuccessModal
+                    open={!!success}
+                    message={success}
+                    onClose={() => setSuccess("")}
+                />
             </div>
         </div>
     );

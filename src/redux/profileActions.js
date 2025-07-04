@@ -31,7 +31,7 @@ export const fetchProfile = () => async (dispatch) => {
   try {
     const token = Cookies.get("jwt_token");
     const res = await fetch(
-      `http://localhost:8000/me`,
+      `${process.env.REACT_APP_API_URL}/me`,
       {
         headers: {
           "Content-Type": "application/json",
