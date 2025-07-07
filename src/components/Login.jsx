@@ -12,12 +12,6 @@ export default function LoginPage() {
     const [error, setError] = useState(null);
     const navigate = useNavigate();
 
-    useEffect(() => {
-        if( Cookies.get("jwt_token")) {
-            navigate("/Home");
-        }
-    }, []);
-
     const handleFormSubmit = async (formData) => {
         const { email, password, recaptchaToken } = formData;
 
