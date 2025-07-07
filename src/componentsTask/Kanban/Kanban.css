@@ -1,0 +1,129 @@
+.project-card {
+  min-width: 200px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 16px;
+  background: #fff;
+  cursor: pointer;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+  transition: box-shadow 0.2s;
+  position: relative;
+}
+
+.project-card:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+  justify-content: space-between;
+}
+
+.card-title {
+  font-weight: 600;
+  font-size: 16px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.card-title-ellipsis {
+  font-weight: 600;
+  font-size: 16px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 180px;
+}
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 0 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  margin-right: 8px;
+}
+
+.tag-default {
+  background: #f0f0f0;
+  color: #888;
+}
+
+.tag-danger {
+  background: #f5222d;
+  color: #fff;
+}
+
+.tag-warning {
+  background: #faad14;
+  color: #fff;
+}
+
+.tag-success {
+  background: #52c41a;
+  color: #fff;
+}
+
+.user-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-left: -8px;
+  border: 2px solid #fff;
+  box-shadow: 0 0 2px #aaa;
+  background: #eee;
+  display: inline-block;
+  text-align: center;
+  line-height: 28px;
+  font-weight: bold;
+  font-size: 13px;
+  color: #888;
+}
+
+.user-group {
+  display: flex;
+  align-items: center;
+  margin-left: auto;
+}
+
+.text-icon {
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  background: #f0f0f0;
+  border-radius: 50%;
+  margin-right: 4px;
+}
+
+.card-content {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.clock-icon {
+  font-size: 13px;
+  margin-right: 2px;
+}
+
+.kanban-board-container {
+  height: calc(100vh - 64px);
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  margin: -32px;
+}
+
+.kanban-board-inner {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  padding: 32px;
+  overflow: scroll;
+}

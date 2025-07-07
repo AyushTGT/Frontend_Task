@@ -1,0 +1,640 @@
+
+/* Table */
+.users-table {
+  width: 100%;
+
+  border: 1px solid black;
+  border-collapse: collapse;
+  background: #fff;
+  border-radius: 8px;
+  overflow: hidden;
+  margin-top: 18px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  outline: 1px solid black;
+}
+.users-table th, .users-table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid #ececec;
+  text-align: left;
+}
+.users-table th {
+  background: #f1f3f6;
+  font-weight: 600;
+  cursor: pointer;
+  user-select: none;
+  outline: 0.5px solid black;
+}
+.users-table tr{
+  outline: 0.5px solid black;
+}
+.users-table tr:hover {
+  background: #f6faff;
+}
+.users-table tr.selected {
+  background: #eef;
+}
+.users-table td input[type="checkbox"] {
+  transform: scale(1.2);
+}
+
+/* Status tags */
+.status-active {
+  background: #d4f7d4;
+  color: #217a32;
+  padding: 2px 8px;
+  border-radius: 5px;
+  font-size: 0.95em;
+}
+.status-deactivated {
+  background: #f7d4d4;
+  color: #a11e1e;
+  padding: 2px 8px;
+  border-radius: 5px;
+  font-size: 0.95em;
+}
+
+/* Online tags */
+.online {
+  color: #13b713;
+  font-weight: 600;
+}
+.offline {
+  color: #c93030;
+  font-weight: 600;
+}
+
+/* Action buttons in table */
+.users-table .action-btn {
+  margin-right: 6px;
+  padding: 5px 10px;
+  background: #e6e6e6;
+  border: none;
+  border-radius: 4px;
+  font-size: 0.98em;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.users-table .action-btn:hover:not([disabled]) {
+  background: #d1d1d1;
+}
+.users-table .action-btn[disabled] {
+  color: #bbb;
+  background: #f5f6fa;
+  cursor: not-allowed;
+}
+.users-table .delete-btn {
+  color: #d92b2b;
+}
+
+/* Pagination */
+.users-pagination {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 20px 0;
+  justify-content: center;
+}
+.users-pagination button {
+  background: #e6e6e6;
+  border: none;
+  border-radius: 4px;
+  padding: 6px 12px;
+  cursor: pointer;
+  font-weight: 500;
+}
+.users-pagination button:disabled {
+  background: #f5f6fa;
+  color: #bbb;
+  cursor: not-allowed;
+}
+.users-pagination select, .users-pagination input[type="number"] {
+  padding: 5px 10px;
+  border-radius: 4px;
+  border: 1px solid #d1d1d1;
+}
+
+/* Modal styles */
+/* Modal Backdrop */
+.modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(30, 35, 40, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+/* Modal Box */
+.modal {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.25);
+  padding: 2.5rem 2rem 2rem 2rem;
+  min-width: 340px;
+  max-width: 90vw;
+  position: relative;
+}
+/* .modal-backdrop {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+.modal {
+  background: #fff;
+  padding: 2em;
+  border-radius: 8px;
+  min-width: 300px;
+  min-height: 100px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+} */
+
+
+.modal h3 {
+  margin-top: 0;
+  margin-bottom: 1.4rem;
+  font-size: 1.3em;
+  font-weight: 600;
+  color: #1a2233;
+  letter-spacing: 0.02em;
+  text-align: center;
+}
+
+/* Form Styles */
+.modal form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.modal label {
+  display: block;
+  margin-bottom: 0.2em;
+  font-weight: 500;
+  color: #32405b;
+}
+
+.modal input {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 1em;
+  background: #f7fafc;
+  transition: border 0.2s;
+}
+
+.modal select {
+  width: 106.5%;
+  /* Adjusted width tomatch the contianer width  */
+  padding: 8px 10px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 1em;
+  background: #f7fafc;
+  transition: border 0.2s;
+}
+
+.modal input:disabled,
+.modal select:disabled {
+  background: #edf0f4;
+  color: #a0aec0;
+  cursor: not-allowed;
+}
+
+.modal input:focus,
+.modal select:focus {
+  border: 1.5px solid #5271ff;
+  outline: none;
+}
+
+/* Button Styles */
+.modal button {
+  padding: 0.6em 1.4em;
+  font-size: 1em;
+  border: none;
+  border-radius: 6px;
+  background: #3b82f6;
+  color: #fff;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.18s;
+  margin-top: 0.5em;
+}
+
+
+.modal button[type="button"] {
+  background: #e5e7eb;
+  color: #222b3a;
+}
+
+.modal button[type="button"]:hover {
+  background: #cfd5de;
+}
+
+.modal button[type="submit"]:hover {
+  background: #2563eb;
+}
+
+
+.user-action-btn {
+    font-family: inherit;
+    font-weight: 500;
+    padding: 7px 18px;
+    margin-right: 8px;
+    border-radius: 6px;
+    border: 1px solid #d1d5db;
+    background: #fff;
+    color: #2563eb;
+    cursor: pointer;
+    transition: 
+        background 0.2s, 
+        color 0.2s, 
+        border 0.2s, 
+        box-shadow 0.2s;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+}
+.user-action-btn:hover:not(:disabled) {
+    background: #f1f5f9;
+    border-color: #2563eb;
+    color: #1d4ed8;
+}
+.user-action-btn:disabled {
+    background: #f3f4f6;
+    color: #a1a1aa;
+    border-color: #e5e7eb;
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+.user-action-btn.delete-btn {
+    color: #dc2626;
+    border-color: #ef4444;
+    background: #fff;
+}
+.user-action-btn.delete-btn:hover:not(:disabled) {
+    background: #fee2e2;
+    color: #b91c1c;
+    border-color: #b91c1c;
+}
+
+.priority-tag {
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-weight: bold;
+  display: inline-block;
+}
+
+.priority-high {
+  background: red;
+  color: white;
+}
+.priority-medium {
+  background: orange;
+  color: white;
+}
+.priority-low {
+  background: green;
+  color: white;
+}
+
+.container {
+  flex : 1;
+  background: #f5f6fa;
+  padding: 24px;
+}
+
+.filters-container {
+  margin-bottom: 16px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  padding: 16px;
+  background: #f6f8fa;
+  border-radius: 8px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+}
+
+.search-input {
+  padding: 8px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  min-width: 180px;
+}
+
+.select-input {
+  padding: 8px 14px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  background: #fff;
+}
+
+.add-user-btn {
+  background: #2563eb;
+  color: #fff;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, box-shadow 0.2s;
+}
+
+.add-user-btn:hover {
+  background: #1d4ed8;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.add-user-btn[disabled] {
+  background: #f3f4f6;
+  color: #a1a1aa;
+  border: 1px solid #e5e7eb;
+  cursor: not-allowed;
+  opacity: 0.9;
+}
+
+.clear-filter-btn {
+  padding: 8px 16px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  background: #fff;
+  color: #374151;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s, border-color 0.2s
+}
+
+.clear-filter-btn:hover {
+  background: #f1f5f9;
+  color: #1f2937;
+  border-color: #2563eb;
+}
+
+.export-csv-btn {
+  padding: 8px 16px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  background: #fff;
+  color: #2563eb;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s, border-color 0.2s
+}
+
+.export-csv-btn:hover {
+  background: #f1f5f9;
+  color: #1d4ed8;
+  border-color: #2563eb;
+}
+
+.bulk-delete-btn {
+  color: #dc2626;
+  background: #fff;
+  border: 1px solid #fca5a5;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s, border-color 0.2s;
+}
+
+.bulk-delete-btn:hover {
+  background: #fee2e2;
+  color: #b91c1c;
+  border-color: #b91c1c;
+}
+
+.btn-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-left: 16px;
+  padding-left: 16px;
+  border-left: 1px solid #e5e7eb;
+}
+  
+
+/* Profile Modal */
+.button-style {
+  border: none;
+  background: #eee;
+  border-radius: 50%;
+  width: 44px;
+  height: 44px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  position: relative;
+  z-index: 2;
+}
+
+.profile-style {
+  position: absolute;
+  top: 50px;
+  right: 0;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 20px;
+  background: #f9f9f9;
+  width: 300px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  margin-top: 10px;
+  z-index: 10;
+}
+
+.logout-style {
+  background-color: #f44336;
+  color: white;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 14px;
+  margin-top: 15px;
+}
+
+.apple {
+  display: flex;
+  flex-direction: column;
+  background-color: #f5f6fa;
+  padding: 24px;
+}
+
+/* Due Date Color Coding */
+.due-date-overdue {
+    background-color: #ffebee !important;
+    color: #c62828 !important;
+    font-weight: bold;
+    padding: 4px 8px;
+    border-radius: 4px;
+}
+
+.due-date-today {
+    background-color: #fff3e0 !important;
+    color: #ef6c00 !important;
+    font-weight: bold;
+    padding: 4px 8px;
+    border-radius: 4px;
+}
+
+.due-date-tomorrow {
+    background-color: #fffde7 !important;
+    color: #f57f17 !important;
+    font-weight: bold;
+    padding: 4px 8px;
+    border-radius: 4px;
+}
+
+.due-date-future {
+    background-color: #e8f5e8 !important;
+    color: #2e7d32 !important;
+    padding: 4px 8px;
+    border-radius: 4px;
+}
+
+.due-date-neutral {
+    background-color: transparent !important;
+    color: inherit !important;
+    padding: 4px 8px;
+}
+
+/* Status Color Coding */
+.status-pending {
+    background-color: #fff3e0;
+    color: #ef6c00;
+    padding: 4px 12px;
+    border-radius: 16px;
+    font-size: 0.85em;
+    font-weight: bold;
+    text-align: center;
+    display: inline-block;
+    min-width: 80px;
+    text-transform: capitalize;
+}
+
+.status-completed {
+    background-color: #e8f5e8;
+    color: #2e7d32;
+    padding: 4px 12px;
+    border-radius: 16px;
+    font-size: 0.85em;
+    font-weight: bold;
+    text-align: center;
+    display: inline-block;
+    min-width: 80px;
+    text-transform: capitalize;
+}
+
+.status-unassigned {
+    background-color: #f3e5f5;
+    color: #7b1fa2;
+    padding: 4px 12px;
+    border-radius: 16px;
+    font-size: 0.85em;
+    font-weight: bold;
+    text-align: center;
+    display: inline-block;
+    min-width: 80px;
+    text-transform: capitalize;
+}
+
+.status-cancelled {
+    background-color: #ffebee;
+    color: #c62828;
+    padding: 4px 12px;
+    border-radius: 16px;
+    font-size: 0.85em;
+    font-weight: bold;
+    text-align: center;
+    display: inline-block;
+    min-width: 80px;
+    text-transform: capitalize;
+}
+
+.status-overdue {
+    background-color: #ffcdd2;
+    color: #d32f2f;
+    padding: 4px 12px;
+    border-radius: 16px;
+    font-size: 0.85em;
+    font-weight: bold;
+    text-align: center;
+    display: inline-block;
+    min-width: 80px;
+    text-transform: capitalize;
+}
+
+.status-default {
+    background-color: #f5f5f5;
+    color: #666;
+    padding: 4px 12px;
+    border-radius: 16px;
+    font-size: 0.85em;
+    font-weight: bold;
+    text-align: center;
+    display: inline-block;
+    min-width: 80px;
+    text-transform: capitalize;
+}
+
+/* Table row hover effect */
+.task-row {
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.task-row:hover {
+    background-color: #f8f9fa !important;
+}
+
+/* Due date text styling */
+.due-date-text {
+    font-size: 0.9em;
+}
+
+.due-date-label {
+    font-size: 0.75em;
+    font-style: italic;
+    margin-left: 4px;
+}
+
+.header-dashboard {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 32px;
+    background: #fff;
+    border-radius: 10px;
+    padding: 24px 28px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+}
+
+.user-status {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5em;
+}
+
+.contain {
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
+}
+
+.terms {
+  background: #fff;
+  border-radius: 12px;
+  padding: 32px;
+  max-width: 700px;
+  margin: 0 auto;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.08)
+}
