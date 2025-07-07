@@ -156,10 +156,6 @@ export default function Dashboardtask() {
         fetchTasksPerDay();
     }, [selectedAssignee]);
 
-    const handleAssigneeChange = (e) => {
-        setSelectedAssignee(e.target.value);
-    };
-
     const overdueTasksData = {
         labels: ["Overdue", "On Time"],
         datasets: [
@@ -215,7 +211,6 @@ export default function Dashboardtask() {
     useEffect(() => {
         axios
             .get(`${process.env.REACT_APP_API_URL}/userName`, {
-                // headers: { Authorization: `Bearer ${token}` },
             })
             .then((res) => {
                 setAllUser(res.data);
@@ -344,23 +339,6 @@ export default function Dashboardtask() {
                     <label styel={{ fontWeight: "bold" }}>
                         Select User:&nbsp;
                     </label>
-                        {/* <select
-                            value={selectedAssignee}
-                            onChange={handleAssigneeChange}
-                            style={{
-                                padding: "8px",
-                                borderRadius: "4px",
-                                border: "1px solid #ccc",
-                                minWidth: "160px",
-                            }}
-                        >
-                            <option value="">All</option>
-                            {allUser.map((u) => (
-                                <option key={u.id} value={u.id}>
-                                    {u.name}
-                                </option>
-                            ))}
-                        </select> */}
                         <Select
                             value={assigneeOptions.find(
                                 (option) => option.value === selectedAssignee

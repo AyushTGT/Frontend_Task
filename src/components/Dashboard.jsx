@@ -26,7 +26,7 @@ function Dashboard({ myProfile1 }) {
     const [modalUser, setModalUser] = useState(null);
     const [modalUserAdd, setModalUserAdd] = useState(null);
     const [selectedRole, setSelectedRole] = useState("User");
-    
+
     const [myProfile, setMyProfile] = useState(null);
     const token = Cookies.get("jwt_token");
     const [isLoading, setIsLoading] = useState(false);
@@ -62,10 +62,7 @@ function Dashboard({ myProfile1 }) {
                 //In case jwt token is expired or any other error
                 if (error.message === "SessionExpired") {
                     setError("Session expired. Please log in again.");
-                    fetch(`${process.env.REACT_APP_API_URL}/logout`, {
-                        method: "POST",
-                        headers: { Authorization: `Bearer ${token}` },
-                    });
+                    Cookies.remove("jwt_token");
                     setTimeout(() => {
                         window.location.href = "/login";
                     }, 1000);

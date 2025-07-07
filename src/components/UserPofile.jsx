@@ -66,6 +66,10 @@ export default function ProfileButton() {
             setUser(data);
             setShowProfile(true);
         } catch (err) {
+            Cookies.remove("jwt_token");
+            setTimeout(() => {
+                window.location.href = "/login";
+            }, 1000);
             setError(err.message);
         } finally {
             setLoading(false);
