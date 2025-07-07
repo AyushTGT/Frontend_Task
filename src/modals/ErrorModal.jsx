@@ -34,19 +34,19 @@ function ErrorModal({ open, message, onClose, title }) {
     return (
         <div
             className="modal-backdrop"
-            style={{ modalStyles }}
+            style={modalStyles }
             onClick={onClose}
         >
             <div
                 className="modal"
-                style={{ modalInStyles }}
+                style={ modalInStyles }
                 onClick={(e) => e.stopPropagation()}
             >
                 <h3 style={{ margin: 0, marginBottom: 10, color: "#c00" }}>
                     {title || "Error"}
                 </h3>
                 <div style={{ marginBottom: 18 }}>{message}</div>
-                <button onClick={onClose} style={{ buttonStyles }}>
+                <button onClick={onClose} style={ buttonStyles }>
                     Close
                 </button>
             </div>

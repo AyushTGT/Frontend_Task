@@ -60,7 +60,7 @@ export default function Tasklisting() {
         <div style={{ flex: 1, background: "#f5f6fa", padding: "24px" }}>
             <Header user={user} />
             <div
-                style={{ addStyle }}
+                style={ addStyle }
                 onClick={() => setAddTaskOpen(true)}
                 title="Add Task"
             >
