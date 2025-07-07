@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import Cookies from "js-cookie";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Header from "./Header";
 import ErrorModal from "../modals/ErrorModal";
 import Loginform from "./Loginform";
@@ -11,6 +11,12 @@ import "./Dashboard.css";
 export default function LoginPage() {
     const [error, setError] = useState(null);
     const navigate = useNavigate();
+
+    useEffect(() => {
+        if( Cookies.get("jwt_token")) {
+            navigate("/Home");
+        }
+    }, []);
 
     const handleFormSubmit = async (formData) => {
         const { email, password, recaptchaToken } = formData;

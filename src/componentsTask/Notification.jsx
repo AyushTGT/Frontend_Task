@@ -121,16 +121,16 @@ export default function NotificationBell({ assigneeId }) {
         <div style={{ display: "inline-block" }}>
             <span
                 ref={bellRef}
-                style={{ bellStyle }}
+                style={ bellStyle }
                 onClick={() => setDropdownOpen((v) => !v)}
             >
                 <BellOutlined />
                 {notifications.length > 0 && (
-                    <span style={{ textStyle }}>{notifications.length}</span>
+                    <span style={ textStyle }>{notifications.length}</span>
                 )}
             </span>
             {dropdownOpen && (
-                <div ref={dropdownRef} style={{ dropStyle }}>
+                <div ref={dropdownRef} style={ dropStyle }>
                     {notifications.length === 0 ? (
                         <div style={{ padding: 16, color: "#888" }}>
                             No new notifications
@@ -167,7 +167,7 @@ export default function NotificationBell({ assigneeId }) {
                                     </div>
                                 )}
                                 <button
-                                    style={{ buttonStyle }}
+                                    style={ buttonStyle }
                                     onClick={() => markAsRead(n.id)}
                                 >
                                     Mark as read

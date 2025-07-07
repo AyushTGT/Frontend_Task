@@ -35,12 +35,12 @@ function SuccessModal({ open, message, onClose, title }) {
     return (
         <div
             className="modal-backdrop"
-            style={{ modalStyles }}
+            style={modalStyles }
             onClick={onClose}
         >
             <div
                 className="modal"
-                style={{ modalInStyles }}
+                style={ modalInStyles }
                 onClick={(e) => e.stopPropagation()}
             >
                 <h3 style={{ margin: 0, marginBottom: 10, color: "#16a34a" }}>
@@ -49,7 +49,7 @@ function SuccessModal({ open, message, onClose, title }) {
                 <div style={{ marginBottom: 18 }}>{message}</div>
                 <button
                     onClick={onClose}
-                    style={{ buttonStyles }}
+                    style={ buttonStyles }
                 >
                     Close
                 </button>

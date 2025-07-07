@@ -77,8 +77,8 @@ export default function TaskDetailModal({
     };
 
     return (
-        <div style={{ modalStyles }}>
-            <div ref={modalRef} style={{ internalStyles }}>
+        <div style={ modalStyles }>
+            <div ref={modalRef} style={ internalStyles }>
                 <h2>Task Details</h2>
                 <div
                     style={{
@@ -277,7 +277,7 @@ export default function TaskDetailModal({
                         )}
                     </label>
                 </div>
-                <div style={{ lastStyles }}>
+                <div style={ lastStyles }>
                     {!editing && <button onClick={handleEdit}>Edit</button>}
                     {editing && (
                         <>
