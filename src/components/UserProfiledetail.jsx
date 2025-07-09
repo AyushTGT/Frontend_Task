@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import Cookies from "js-cookie";
 import { UserOutlined } from "@ant-design/icons";
 import "./Dashboard.css";
+import { getToken } from "../utils/utils";
 
 //Modal for showing the user profile details
 // with logout and account deactivsation options
@@ -12,7 +13,7 @@ export default function ProfileButton() {
     const [user, setUser] = useState(null);
     const [error, setError] = useState(null);
     const popupRef = useRef(null);
-    const token = Cookies.get("jwt_token");
+    const token = getToken();
 
     const fetchUser = async () => {
         setLoading(true);

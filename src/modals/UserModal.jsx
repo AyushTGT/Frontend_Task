@@ -3,12 +3,13 @@ import Cookies from "js-cookie";
 import "../components/Dashboard.css";
 import SuccessModal from "./SuccessModal";
 import ErrorModal from "./ErrorModal";
+import { getToken } from "../utils/utils.jsx";
 
 const roleOptions = ["User", "Admin", "Master"];
 
 function UserModal({ myProfile, user, onClose, onSave }) {
     const [form, setForm] = useState(user || {});
-    const token = Cookies.get("jwt_token");
+    const token = getToken();
     const [error, setError] = useState("");
     const [success, setSuccess] = useState("");
 

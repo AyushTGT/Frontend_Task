@@ -9,6 +9,7 @@ import { fetchProfile } from "../redux/profileActions";
 import ErrorModal from "../modals/ErrorModal.jsx";
 import { getUsers, getProfile } from "../apis/userapis.jsx";
 import SuccessModal from "../modals/SuccessModal.jsx";
+import { getToken } from "../utils/utils.jsx";
 
 function Dashboard({ myProfile1 }) {
     const [users, setUsers] = useState([]);
@@ -28,7 +29,7 @@ function Dashboard({ myProfile1 }) {
     const [selectedRole, setSelectedRole] = useState("User");
 
     const [myProfile, setMyProfile] = useState(null);
-    const token = Cookies.get("jwt_token");
+    const token = getToken();
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState("");
     const [success, setSuccess] = useState("");

@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import Cookies from "js-cookie";
+import { getToken } from "../utils/utils";
 
 //Profile Button component 
 // allowing logout and other funcitons
@@ -10,7 +11,7 @@ export default function ProfileButton() {
     const [user, setUser] = useState(null);
     const [error, setError] = useState(null);
     const popupRef = useRef(null);
-    const token = Cookies.get("jwt_token");
+    const token = getToken();
 
     const buttonStyle = {
         border: "none",

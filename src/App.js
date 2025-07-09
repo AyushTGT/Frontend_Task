@@ -45,7 +45,6 @@ function SidebarLayoutUser() {
 function App() {
     const dispatch = useDispatch();
     useEffect(() => {
-        console.log("Fetching profile data...");
         dispatch(fetchProfile());
     }, [dispatch]);
 

@@ -6,6 +6,7 @@ import axios from "axios";
 import AddTaskModal from "../modals/AddTaskModal";
 import Cookies from "js-cookie";
 import SuccessModal from "../modals/SuccessModal";
+import { getToken } from "../utils/utils";
 
 //Taks listing component from kanban listing page
 
@@ -31,7 +32,7 @@ export default function Tasklisting() {
     const [addTaskOpen, setAddTaskOpen] = useState(false);
     const [reporterOptions, setReporterOptions] = useState([]);
     const [success, setSuccess] = useState(null);
-    const token = Cookies.get("jwt_token");
+    const token = getToken();
 
     useEffect(() => {
         axios

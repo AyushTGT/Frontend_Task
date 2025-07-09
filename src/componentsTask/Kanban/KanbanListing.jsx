@@ -7,6 +7,7 @@ import TaskDetailModal from "../../modals/TaskDetailModal.jsx";
 import axios from "axios";
 import Cookies from "js-cookie";
 import ErrorModal from "../../modals/ErrorModal.jsx";
+import { getToken } from "../../utils/utils.jsx";
 
 const KANBAN_STAGES = [
     { id: "unassigned", title: "UNASSIGNED", apiStatus: "unassigned" },
@@ -37,7 +38,7 @@ export function TasksListPage({ user }) {
     const [tasks, setTasks] = useState([]);
     const [modalTask, setModalTask] = useState(null);
     const [taskDetailOpen, setTaskDetailOpen] = useState(false);
-    const token = Cookies.get("jwt_token");
+    const token = getToken();
     const [reporterOptions, setReporterOptions] = useState([]);
     const [errors, setErrors] = useState(null);
 

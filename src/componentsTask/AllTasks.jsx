@@ -8,6 +8,7 @@ import AddTaskModal from "../modals/AddTaskModal";
 import TaskDetailModal from "../modals/TaskDetailModal";
 import ErrorModal from "../modals/ErrorModal";
 import SuccessModal from "../modals/SuccessModal";
+import { getToken } from "../utils/utils";
 
 //task page listing same as user listing with search paramters and filters
 
@@ -25,7 +26,7 @@ export default function AllTasks() {
     const [sortOrder, setSortOrder] = useState("asc");
     const [selectedStatus, setSelectedStatus] = useState("");
     const [myProfile, setMyProfile] = useState(null);
-    const token = Cookies.get("jwt_token");
+    const token = getToken();
     const searchTimeout = useRef(null);
     const [addTaskOpen, setAddTaskOpen] = useState(false);
     const [error, setError] = useState("");

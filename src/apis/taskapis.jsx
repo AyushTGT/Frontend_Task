@@ -1,4 +1,5 @@
 import Cookies from "js-cookie";
+import { getToken } from "../utils/utils.jsx";
 const BASE_URL = `${process.env.REACT_APP_API_URL}/`;
 
 export async function fetchTaskCount(params = {}) {
@@ -21,7 +22,7 @@ export async function fetchTaskCount(params = {}) {
 }
 
 export async function overDue(params = {}) {
-    const token = Cookies.get("jwt_token");
+    const token = getToken();
 
     const query = new URLSearchParams(params).toString();
     const url = `${BASE_URL}/overdueTasks${query ? `?${query}` : ""}`;
@@ -40,7 +41,7 @@ export async function overDue(params = {}) {
 
 export async function userDetails() {
     // Build query string from params object
-    const token = Cookies.get("jwt_token");
+    const token = getToken();
     const url = `${BASE_URL}/me`;
 
     const response = await fetch(url, {
@@ -61,7 +62,7 @@ export async function userDetails() {
 
 
 export async function thisMonth(params = {}) {
-    const token = Cookies.get("jwt_token");
+    const token = getToken();
 
     const query = new URLSearchParams(params).toString();
     const url = `${BASE_URL}/taskCompletedThisMonth${query ? `?${query}` : ""}`;

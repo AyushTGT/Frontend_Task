@@ -1,5 +1,6 @@
 // Actions and thunk for profile state
 import Cookies from "js-cookie";
+import { getToken } from "../utils/utils";
 
 export const FETCH_PROFILE_REQUEST = "FETCH_PROFILE_REQUEST";
 export const FETCH_PROFILE_SUCCESS = "FETCH_PROFILE_SUCCESS";
@@ -29,7 +30,7 @@ export const clearProfile = () => ({
 export const fetchProfile = () => async (dispatch) => {
   dispatch(fetchProfileRequest());
   try {
-    const token = Cookies.get("jwt_token");
+    const token = getToken();
     const res = await fetch(
       `${process.env.REACT_APP_API_URL}/me`,
       {

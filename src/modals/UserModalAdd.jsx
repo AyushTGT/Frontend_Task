@@ -3,6 +3,7 @@ import Cookies from "js-cookie";
 import "../components/Dashboard.css";
 import ErrorModal from "./ErrorModal";
 import SuccessModal from "./SuccessModal";
+import { getToken } from "../utils/utils.jsx";
 
 
 //Modal for adding a new user
@@ -14,7 +15,7 @@ function UserModalAdd({ user, onClose, onSave }) {
     const [form, setForm] = useState({ name: "", email: "", post: "User" });
     const [emailError, setEmailError] = useState("");
     const [nameError, setNameError] = useState("");
-    const token = Cookies.get("jwt_token");
+    const token = getToken();
     const [error, setError] = useState("");
     const [success, setSuccess] = useState("");
 
