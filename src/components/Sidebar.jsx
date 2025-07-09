@@ -8,6 +8,7 @@ export default function SidebarUser() {
 
     const menuItems = [
         { name: "User Listing", path: "/dashboard", icon: <TeamOutlined /> },
+        { name: "User Card", path: "/usercard", icon: <TeamOutlined /> },
         { name: "Task Management", path: "/Home", icon: <HomeOutlined /> },
     ];
 

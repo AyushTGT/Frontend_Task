@@ -37,8 +37,6 @@ ChartJS.register(
     LineElement
 );
 
-// Dashboardtask component to display task metrics and charts
-
 export default function Dashboardtask() {
     const [metrics, setMetrics] = useState([
         { label: "Tasks Completed", value: 0 },
@@ -54,6 +52,10 @@ export default function Dashboardtask() {
     const [userError, setUserError] = useState(null);
     const [allUser, setAllUser] = useState([]);
     const [selectedAssignee, setSelectedAssignee] = useState(null);
+    const [recentActivities, setRecentActivities] = useState([]);
+    const [todayTasks, setTodayTasks] = useState([]);
+    const [activitiesLoading, setActivitiesLoading] = useState(true);
+    const [todayTasksLoading, setTodayTasksLoading] = useState(true);
 
     useEffect(() => {
         async function fetchUser() {
@@ -114,6 +116,65 @@ export default function Dashboardtask() {
 
         getMetrics();
     }, [selectedAssignee]);
+
+    // Fetch recent activities
+    useEffect(() => {
+        async function fetchRecentActivities() {
+            setActivitiesLoading(true);
+            try {
+                let url = `${process.env.REACT_APP_API_URL}/recent-activities`;
+                const params = new URLSearchParams(assigneeObj).toString();
+                if (params) {
+                    url += `?${params}`;
+                }
+                const response = await fetch(url);
+                const result = await response.json();
+                
+                // Transform the notification data to match our expected format
+                const transformedData = (result.data || result || []).map(activity => ({
+                    id: activity.id,
+                    title: activity.title,
+                    description: activity.description,
+                    status: activity.status === 'read' ? 'completed' : 'pending',
+                    updated_at: activity.updated_at,
+                    created_at: activity.created_at,
+                    priority: 'medium', // Default priority since notifications don't have priority
+                    type: activity.title.includes('Task Assigned') ? 'assignment' : 
+                          activity.title.includes('Status Changed') ? 'status_change' : 'notification'
+                }));
+                
+                setRecentActivities(transformedData);
+                console.log("Recent Activities:", transformedData);
+            } catch (err) {
+                console.error("Failed to fetch recent activities:", err);
+                setRecentActivities([]);
+            }
+            setActivitiesLoading(false);
+        }
+        fetchRecentActivities();
+        console.log(recentActivities)
+    }, [selectedAssignee]);
+
+    // Fetch today's tasks for logged-in user
+    useEffect(() => {
+        async function fetchTodayTasks() {
+            if (!user?.id) return;
+            
+            setTodayTasksLoading(true);
+            try {
+                const today = new Date().toISOString().slice(0, 10);
+                let url = `${process.env.REACT_APP_API_URL}/tasks-due-today?assignee=${user.id}&due_date=${today}`;
+                const response = await fetch(url);
+                const result = await response.json();
+                setTodayTasks(result.data || []);
+            } catch (err) {
+                console.error("Failed to fetch today's tasks:", err);
+                setTodayTasks([]);
+            }
+            setTodayTasksLoading(false);
+        }
+        fetchTodayTasks();
+    }, [user?.id]);
 
     const [tasksPerDayData, setTasksPerDayData] = useState({
         labels: Array.from({ length: 7 }, (_, i) => {
@@ -238,56 +299,146 @@ export default function Dashboardtask() {
         ],
     };
 
-    //Charts
+    // Common chart options with consistent sizing
+    const commonChartOptions = {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { 
+            legend: { 
+                position: "bottom",
+                labels: {
+                    padding: 20,
+                    usePointStyle: true,
+                    font: {
+                        size: 12
+                    }
+                }
+            }
+        },
+        layout: {
+            padding: {
+                top: 10,
+                bottom: 10,
+                left: 10,
+                right: 10
+            }
+        }
+    };
+
+    // Specific options for pie charts to control size
+    const pieChartOptions = {
+        ...commonChartOptions,
+        plugins: {
+            ...commonChartOptions.plugins,
+            legend: {
+                ...commonChartOptions.plugins.legend,
+                position: "bottom"
+            }
+        },
+        elements: {
+            arc: {
+                borderWidth: 2
+            }
+        },
+        // Control pie chart size
+        cutout: 0, // For pie chart (not doughnut)
+        radius: "70%", // Limit the pie chart size
+    };
+
+    // Specific options for bar charts
+    const barChartOptions = {
+        ...commonChartOptions,
+        scales: {
+            y: {
+                beginAtZero: true,
+                grid: {
+                    display: true,
+                    color: '#f0f0f0'
+                },
+                ticks: {
+                    font: {
+                        size: 11
+                    }
+                }
+            },
+            x: {
+                grid: {
+                    display: false
+                },
+                ticks: {
+                    font: {
+                        size: 11
+                    }
+                }
+            }
+        }
+    };
+
+    // Specific options for line charts
+    const lineChartOptions = {
+        ...commonChartOptions,
+        scales: {
+            y: {
+                beginAtZero: true,
+                grid: {
+                    display: true,
+                    color: '#f0f0f0'
+                },
+                ticks: {
+                    font: {
+                        size: 11
+                    }
+                }
+            },
+            x: {
+                grid: {
+                    display: false
+                },
+                ticks: {
+                    font: {
+                        size: 11
+                    }
+                }
+            }
+        }
+    };
+
+    //Charts with consistent sizing
     const CHARTS = [
         {
             type: "Bar",
             component: Bar,
             data: tasksPerDayData,
             title: "Tasks Completed Per Day",
-            options: {
-                responsive: true,
-                plugins: { legend: { position: "bottom" } },
-            },
+            options: barChartOptions,
         },
         {
             type: "Pie",
             component: Pie,
             data: overdueTasksData,
             title: "Overdue vs On Time",
-            options: {
-                responsive: true,
-                plugins: { legend: { position: "bottom" } },
-                radius: "80%",
-            },
+            options: pieChartOptions,
         },
         {
             type: "Bar",
             component: Bar,
             data: tasksByStatusData,
             title: "Tasks by Status",
-            options: {
-                responsive: true,
-                plugins: { legend: { position: "bottom" } },
-            },
+            options: barChartOptions,
         },
         {
             type: "Line",
             component: Line,
             data: tasksCreatedVsCompletedData,
             title: "Tasks Created vs Completed (Monthly)",
-            options: {
-                responsive: true,
-                plugins: { legend: { position: "bottom" } },
-                scales: { y: { beginAtZero: true } },
-            },
+            options: lineChartOptions,
         },
     ];
 
     const [index, setIndex] = useState(0);
     const intervalRef = useRef(null);
 
-    // Auto-scroll every 4 seconds
+    // Auto-scroll every 6 seconds
     useEffect(() => {
         intervalRef.current = setInterval(() => {
             setIndex((prev) => (prev + 1) % CHARTS.length);
@@ -301,7 +452,7 @@ export default function Dashboardtask() {
         clearInterval(intervalRef.current);
         intervalRef.current = setInterval(() => {
             setIndex((prev) => (prev + 1) % CHARTS.length);
-        }, 4000);
+        }, 6000);
     };
 
     const prev = () => goTo((index - 1 + CHARTS.length) % CHARTS.length);
@@ -317,6 +468,42 @@ export default function Dashboardtask() {
         })),
     ];
 
+    const formatDate = (dateString) => {
+        const date = new Date(dateString);
+        return date.toLocaleDateString('en-US', {
+            month: 'short',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+    };
+
+    const getStatusColor = (status) => {
+        switch (status?.toLowerCase()) {
+            case 'completed':
+                return '#10b981';
+            case 'pending':
+                return '#f59e0b';
+            case 'overdue':
+                return '#ef4444';
+            default:
+                return '#6b7280';
+        }
+    };
+
+    const getPriorityColor = (priority) => {
+        switch (priority?.toLowerCase()) {
+            case 'high':
+                return '#ef4444';
+            case 'medium':
+                return '#f59e0b';
+            case 'low':
+                return '#10b981';
+            default:
+                return '#6b7280';
+        }
+    };
+
     return (
         <div className="apple">
             <Header user={user} />
@@ -328,7 +515,6 @@ export default function Dashboardtask() {
                         marginTop: "-30px",
                         marginBottom: 20,
                         display: "flex",
-
                         justifyContent: "center",
                         alignItems: "center",
                         border: "1px solid #e0e0e0",
@@ -336,30 +522,29 @@ export default function Dashboardtask() {
                         borderRadius: "10px",
                     }}
                 >
-                    <label styel={{ fontWeight: "bold" }}>
+                    <label style={{ fontWeight: "bold" }}>
                         Select User:&nbsp;
                     </label>
-                        <Select
-                            value={assigneeOptions.find(
-                                (option) => option.value === selectedAssignee
-                            )}
-                            onChange={(selectedOption) =>
-                                setSelectedAssignee(selectedOption?.value || "")
-                            }
-                            options={assigneeOptions}
-                            isSearchable={true}
-                            placeholder="Search assignees..."
-                            noOptionsMessage={() => "No assignees found"}
-                            styles={{
-                                container: (provided) => ({
-                                    ...provided,
-                                    minWidth: "200px",
-                                    width: "200px",
-                                    maxWidth: "200px",
-                                }),
-                            }}
-                        />
-                    
+                    <Select
+                        value={assigneeOptions.find(
+                            (option) => option.value === selectedAssignee
+                        )}
+                        onChange={(selectedOption) =>
+                            setSelectedAssignee(selectedOption?.value || "")
+                        }
+                        options={assigneeOptions}
+                        isSearchable={true}
+                        placeholder="Search assignees..."
+                        noOptionsMessage={() => "No assignees found"}
+                        styles={{
+                            container: (provided) => ({
+                                ...provided,
+                                minWidth: "200px",
+                                width: "200px",
+                                maxWidth: "200px",
+                            }),
+                        }}
+                    />
                 </div>
             )}
 
@@ -371,34 +556,132 @@ export default function Dashboardtask() {
                 <MetricCards metrics={metrics} />
             )}
 
-            <div className="container">
-                <button
-                    className="arrow-btn left"
-                    onClick={prev}
-                    aria-label="Previous chart"
-                >
-                    &#8592;
-                </button>
-                <button
-                    className="arrow-btn right"
-                    onClick={next}
-                    aria-label="Next chart"
-                >
-                    &#8594;
-                </button>
-                <div className="title">{title}</div>
-                <div style={{ width: "100%", minHeight: 220 }}>
-                    <ChartComponent data={data} options={options} />
+            {/* Dashboard Layout with Charts and Activity Columns */}
+            <div className="dashboard-layout">
+                {/* Charts Section */}
+                <div className="charts-section">
+                    <div className="container">
+                        <button
+                            className="arrow-btn left"
+                            onClick={prev}
+                            aria-label="Previous chart"
+                        >
+                            &#8592;
+                        </button>
+                        <button
+                            className="arrow-btn right"
+                            onClick={next}
+                            aria-label="Next chart"
+                        >
+                            &#8594;
+                        </button>
+                        <div className="title">{title}</div>
+                        <div className="chart-container">
+                            <ChartComponent data={data} options={options} />
+                        </div>
+                        <div className="dots">
+                            {CHARTS.map((_, i) => (
+                                <span
+                                    key={i}
+                                    className={`dot${i === index ? " active" : ""}`}
+                                    onClick={() => goTo(i)}
+                                    aria-label={`Go to chart ${i + 1}`}
+                                />
+                            ))}
+                        </div>
+                    </div>
                 </div>
-                <div className="dots">
-                    {CHARTS.map((_, i) => (
-                        <span
-                            key={i}
-                            className={`dot${i === index ? " active" : ""}`}
-                            onClick={() => goTo(i)}
-                            aria-label={`Go to chart ${i + 1}`}
-                        />
-                    ))}
+
+                {/* Activity Columns */}
+                <div className="activity-columns">
+                    {/* Recent Activities */}
+                    <div className="activity-card">
+                        <div className="activity-header">
+                            <h3>Recent Activities</h3>
+                            <div className="activity-icon">📊</div>
+                        </div>
+                        <div className="activity-content">
+                            {activitiesLoading ? (
+                                <div className="loading-state">
+                                    <div className="spinner"></div>
+                                    <span>Loading activities...</span>
+                                </div>
+                            ) : recentActivities.length > 0 ? (
+                                <div className="activity-list">
+                                    {recentActivities.map((activity, index) => (
+                                        <div key={index} className="activity-item">
+                                            <div className="activity-info">
+                                                <div className="activity-title">{activity.title}</div>
+                                                <div className="activity-meta">
+                                                    <span className="activity-status" 
+                                                          style={{ color: getStatusColor(activity.status) }}>
+                                                        {activity.status}
+                                                    </span>
+                                                    <span className="activity-date">
+                                                        {formatDate(activity.updated_at)}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                            <div className="activity-priority" 
+                                                 style={{ backgroundColor: getPriorityColor(activity.priority) }}>
+                                                {activity.priority}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <div className="empty-state">
+                                    <div className="empty-icon">📋</div>
+                                    <p>No recent activities found</p>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Tasks Due Today */}
+                    <div className="activity-card">
+                        <div className="activity-header">
+                            <h3>Tasks Due Today</h3>
+                            <div className="activity-icon">📅</div>
+                        </div>
+                        <div className="activity-content">
+                            {todayTasksLoading ? (
+                                <div className="loading-state">
+                                    <div className="spinner"></div>
+                                    <span>Loading today's tasks...</span>
+                                </div>
+                            ) : todayTasks.length > 0 ? (
+                                <div className="activity-list">
+                                    {todayTasks.map((task, index) => (
+                                        <div key={index} className="activity-item">
+                                            <div className="activity-info">
+                                                <div className="activity-title">{task.title}</div>
+                                                <div className="activity-meta">
+                                                    <span className="activity-status" 
+                                                          style={{ color: getStatusColor(task.status) }}>
+                                                        {task.status}
+                                                    </span>
+                                                    <span className="activity-assignee">
+                                                        {task.assignee_name || 'Unassigned'}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                            <div className="activity-priority" 
+                                                 style={{ backgroundColor: getPriorityColor(task.priority) }}>
+                                                {task.priority}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <div className="empty-state">
+                                    <div className="empty-icon">🎉</div>
+                                    <p>You have no tasks due today!</p>
+                                    <small>Great job staying on top of your work!</small>
+                                </div>
+                            )}
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

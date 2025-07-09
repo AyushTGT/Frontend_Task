@@ -42,26 +42,9 @@ export default function AllTasks() {
     const [modalTask, setModalTask] = useState(null);
     const [taskDetailOpen, setTaskDetailOpen] = useState(false);
     const [dueDateStart, setDueDateStart] = useState("");
-    const [dueDateEnd, setDueDateEnd] = useState("")
-    
+    const [dueDateEnd, setDueDateEnd] = useState("");
 
-    const getStatusClass = (status) => {
-        const statusLower = status?.toLowerCase();
-        switch(statusLower) {
-            case 'pending':
-                return 'status-pending';
-            case 'completed':
-                return 'status-completed';
-            case 'unassigned':
-                return 'status-unassigned';
-            case 'cancelled':
-                return 'status-cancelled';
-            case 'overdue':
-                return 'status-overdue';
-            default:
-                return 'status-default';
-        }
-    };
+    const [viewMode, setViewMode] = useState("all");
 
     useEffect(() => {
         axios
@@ -102,16 +85,19 @@ export default function AllTasks() {
 
         const params = new URLSearchParams(filteredParams);
 
-        fetch(`${process.env.REACT_APP_API_URL}/filterTasks?${params.toString()}`, {
-            headers: { Authorization: `Bearer ${token}` },
-        })
+        fetch(
+            `${process.env.REACT_APP_API_URL}/filterTasks?${params.toString()}`,
+            {
+                headers: { Authorization: `Bearer ${token}` },
+            }
+        )
             .then((res) => {
                 if (res.status === 401) {
                     setError("Session expired. Please log in again.");
                     setTimeout(() => {
                         window.location.href = "/login";
                     }, 5000);
-                    
+
                     return;
                 }
                 return res.json();
@@ -144,7 +130,7 @@ export default function AllTasks() {
                     setTimeout(() => {
                         window.location.href = "/login";
                     }, 5000);
-                    
+
                     return null;
                 }
                 return res.json();
@@ -197,6 +183,18 @@ export default function AllTasks() {
         }
     };
 
+    const handleViewModeChange = (mode) => {
+        setViewMode(mode);
+
+        if (mode === "my" && myProfile) {
+            // Set assignee filter to current user's ID when switching to "My Tasks"
+            setAssigneeFilter(myProfile.id.toString());
+        } else if (mode === "all") {
+            // Clear assignee filter when switching to "All Tasks"
+            setAssigneeFilter("");
+        }
+    };
+
     //Clicking a row to open task detail modal
     const handleRowClick = (task) => {
         setModalTask(task);
@@ -215,6 +213,7 @@ export default function AllTasks() {
         setAssigneeFilter("");
         setDueDateStart("");
         setDueDateEnd("");
+        setViewMode("all");
         setPagination({ page: 1, per_page: 20, total: 0, last_page: 1 });
     };
 
@@ -246,11 +245,101 @@ export default function AllTasks() {
             label: user.name,
         })),
     ];
+    // Helper function to get due date class
+    const getDueDateClass = (dueDate) => {
+        const today = new Date();
+        const due = new Date(dueDate + "T00:00:00");
+        const diffTime = due - today;
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+        if (diffDays < 0) return "overdue";
+        if (diffDays === 0) return "due-today";
+        if (diffDays <= 3) return "due-soon";
+        return "due-normal";
+    };
+
+    // Helper function to get due date indicator
+    const getDueDateIndicator = (dueDate) => {
+        const today = new Date();
+        const due = new Date(dueDate + "T00:00:00");
+        const diffTime = due - today;
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+        if (diffDays < 0)
+            return <span className="date-indicator overdue-indicator">⚠️</span>;
+        if (diffDays === 0)
+            return <span className="date-indicator today-indicator">🔥</span>;
+        if (diffDays <= 3)
+            return <span className="date-indicator soon-indicator">⏰</span>;
+        return null;
+    };
+
+    // Update your existing getStatusClass function if needed
+    const getStatusClass = (status) => {
+        switch (status?.toLowerCase()) {
+            case "completed":
+                return "status-completed";
+            case "pending":
+                return "status-pending";
+            case "in-progress":
+            case "in progress":
+                return "status-in-progress";
+            case "overdue":
+                return "status-overdue";
+            default:
+                return "status-default";
+        }
+    };
 
     // UI
     return (
         <div className="apple">
             <Header user={myProfile} />
+            <div className="view-toggle-container">
+                <div className="view-toggle-wrapper">
+                    <span
+                        className={`toggle-label ${
+                            viewMode === "all" ? "active" : ""
+                        }`}
+                    >
+                        All Tasks
+                    </span>
+                    <div className="toggle-switch">
+                        <input
+                            type="checkbox"
+                            id="viewToggle"
+                            checked={viewMode === "my"}
+                            onChange={(e) =>
+                                handleViewModeChange(
+                                    e.target.checked ? "my" : "all"
+                                )
+                            }
+                            className="toggle-input"
+                        />
+                        <label
+                            htmlFor="viewToggle"
+                            className="toggle-label-slider"
+                        >
+                            <span className="toggle-slider"></span>
+                        </label>
+                    </div>
+                    <span
+                        className={`toggle-label ${
+                            viewMode === "my" ? "active" : ""
+                        }`}
+                    >
+                        My Tasks
+                    </span>
+                </div>
+                <div className="current-view-indicator">
+                    <span className="view-indicator">
+                        Currently viewing:{" "}
+                        <strong>
+                            {viewMode === "all" ? "All Tasks" : "My Tasks"}
+                        </strong>
+                    </span>
+                </div>
+            </div>
             <div>
                 <div className="filters-container">
                     <input
@@ -271,7 +360,7 @@ export default function AllTasks() {
                             </option>
                         ))}
                     </select>
-                    
+
                     <select
                         value={assignedByFilter}
                         className="select-input"
@@ -434,7 +523,11 @@ export default function AllTasks() {
                 <table
                     border="1"
                     cellPadding="8"
-                    style={{ width: "100%", borderCollapse: "collapse" }}
+                    style={{
+                        width: "100%",
+                        borderCollapse: "collapse",
+                        marginLeft: "0px",
+                    }}
                     className="users-table"
                 >
                     <thead>
@@ -470,55 +563,105 @@ export default function AllTasks() {
                             <tr
                                 key={user.id}
                                 onClick={() => handleRowClick(user)}
+                                className="task-row"
                             >
-                                <td>{user.title}</td>
-                                <td>
-                                    <span className={getStatusClass(user.status)}>
+                                <td className="title-cell">
+                                    <div className="task-title">
+                                        {user.title}
+                                    </div>
+                                </td>
+                                <td className="status-cell">
+                                    <span
+                                        className={`status-badge ${getStatusClass(
+                                            user.status
+                                        )}`}
+                                    >
                                         {user.status}
                                     </span>
                                 </td>
-                                <td>
-                                    {user.start_date
-                                        ? new Date(user.start_date + 'T00:00:00').toLocaleDateString('en-US', {
-                                            year: 'numeric',
-                                            month: 'short',
-                                            day: 'numeric'
+                                <td className="date-cell">
+                                    {user.start_date ? (
+                                        new Date(
+                                            user.start_date + "T00:00:00"
+                                        ).toLocaleDateString("en-US", {
+                                            year: "numeric",
+                                            month: "short",
+                                            day: "numeric",
                                         })
-                                        : ""}
+                                    ) : (
+                                        <span className="no-date">Not set</span>
+                                    )}
                                 </td>
-                                <td >
-                                   { user.due_date}
+                                <td className="date-cell">
+                                    {user.due_date ? (
+                                        <div className="due-date-container">
+                                            <span
+                                                className={`due-date ${getDueDateClass(
+                                                    user.due_date
+                                                )}`}
+                                            >
+                                                {new Date(
+                                                    user.due_date + "T00:00:00"
+                                                ).toLocaleDateString("en-US", {
+                                                    year: "numeric",
+                                                    month: "short",
+                                                    day: "numeric",
+                                                })}
+                                            </span>
+                                            {getDueDateIndicator(user.due_date)}
+                                        </div>
+                                    ) : (
+                                        <span className="no-date">Not set</span>
+                                    )}
                                 </td>
-                                <td>
+                                <td className="priority-cell">
                                     <span
-                                        className={`priority-tag ${
-                                            user.priority === "High"
-                                                ? "priority-high"
-                                                : user.priority === "Medium"
-                                                ? "priority-medium"
-                                                : "priority-low"
-                                        }`}
+                                        className={`priority-badge priority-${user.priority?.toLowerCase()}`}
                                     >
                                         {user.priority}
                                     </span>
                                 </td>
-                                <td>{user.project_name}</td>
-                                <td>
-                                    {reporterOptions.find(
-                                        (u) => u.id === user.created_by
-                                    )?.name || user.created_by}
+                                <td className="project-cell">
+                                    <span className="project-name">
+                                        {user.project_name || (
+                                            <span className="no-project">
+                                                No Project
+                                            </span>
+                                        )}
+                                    </span>
                                 </td>
-
-                                <td>
-                                    {reporterOptions.find(
-                                        (u) => u.id === user.reporter
-                                    )?.name || user.reporter}
+                                <td className="user-cell">
+                                    <div className="user-info">
+                                        {reporterOptions.find(
+                                            (u) => u.id === user.created_by
+                                        )?.name || (
+                                            <span className="unknown-user">
+                                                Unknown
+                                            </span>
+                                        )}
+                                    </div>
                                 </td>
-
-                                <td>
-                                    {reporterOptions.find(
-                                        (u) => u.id === user.assignee
-                                    )?.name || user.assignee}
+                                <td className="user-cell">
+                                    <div className="user-info">
+                                        {reporterOptions.find(
+                                            (u) => u.id === user.reporter
+                                        )?.name || (
+                                            <span className="unknown-user">
+                                                Unknown
+                                            </span>
+                                        )}
+                                    </div>
+                                </td>
+                                <td className="user-cell">
+                                    <div className="user-info">
+                                        {reporterOptions.find(
+                                            (u) => u.id === user.assignee
+                                        )?.name || (
+                                            <span className="unassigned">
+                                                Unassigned
+                                            </span>
+                                        )}
+                                    </div>
                                 </td>
                             </tr>
                         ))}
@@ -554,7 +697,7 @@ export default function AllTasks() {
                         }
                     }}
                 />
-                
+
                 <ErrorModal
                     open={!!error}
                     message={error}
@@ -575,7 +718,6 @@ export default function AllTasks() {
                     message={success}
                     onClose={() => setSuccess("")}
                 />
-
             </div>
         </div>
     );

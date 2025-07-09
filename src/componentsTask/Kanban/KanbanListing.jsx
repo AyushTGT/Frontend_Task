@@ -202,7 +202,10 @@ export function TasksListPage({ user }) {
                                                 dueDate={
                                                     task.dueDate || undefined
                                                 }
+                                                status={task.stageId}
+                                                priority={task._raw.priority}
                                                 users={task.users}
+                                                assignee={reporterOptions?.find((u) => u.id === task._raw.assignee)?.name}
                                                 onView={() =>
                                                     handleRowClick(task)
                                                 }

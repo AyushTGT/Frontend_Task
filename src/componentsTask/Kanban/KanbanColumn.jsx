@@ -13,19 +13,35 @@ export function KanbanColumn({
         data,
     });
 
+    const getColumnIcon = () => {
+        switch (title.toLowerCase()) {
+            case 'pending':
+                return '⏳';
+            case 'in progress':
+            case 'in-progress':
+                return '⚡';
+            case 'completed':
+                return '✅';
+            case 'review':
+                return '👀';
+            default:
+                return '📋';
+        }
+    };
+
     return (
         <div className="kanban-column" ref={setNodeRef}>
             <div className="kanban-column-header">
                 <div className="kanban-column-title-row">
                     <div className="kanban-column-title-group">
+                        <span className="column-icon">{getColumnIcon()}</span>
                         <span className="kanban-column-title" title={title}>
                             {title}
                         </span>
-                        {!!count && (
+                        {count !== undefined && (
                             <span className="kanban-column-badge">{count}</span>
                         )}
                     </div>
-                   
                 </div>
             </div>
             <div
@@ -39,4 +55,3 @@ export function KanbanColumn({
         </div>
     );
 }
-

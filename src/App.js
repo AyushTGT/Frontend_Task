@@ -13,6 +13,7 @@ import Home from "./componentsTask/Home";
 import Tasklisting from "./componentsTask/Tasklisting";
 import Sidebar from "./componentsTask/Sidebar";
 import AllTasks from "./componentsTask/AllTasks";
+import UserCards from "./components/UserCards";
 import SidebarUser from "./components/Sidebar";
 import { useDispatch } from "react-redux";
 import { fetchProfile } from "./redux/profileActions";
@@ -79,6 +80,7 @@ function App() {
 
                 <Route element={<SidebarLayoutUser />}>
                     <Route path="/dashboard" element={<Dashboard />} />
+                    <Route path="/usercard" element={<UserCards />} />
                 </Route>
 
                 {/* All other routes */}

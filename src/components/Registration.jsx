@@ -4,14 +4,40 @@ import "./register.css";
 
 const roles = ["User", "Master", "Admin"];
 
-// const initialState = {
-//     name: "",
-//     email: "",
-//     password: "",
-//     confirmPassword: "",
-//     role: "User",
-//     terms: false,
-// };
+// Password strength checker
+const checkPasswordStrength = (password) => {
+    if (!password) return { strength: 0, level: "weak", suggestions: [] };
+    
+    let score = 0;
+    const suggestions = [];
+    
+    // Length check
+    if (password.length >= 8) score += 1;
+    else suggestions.push("At least 8 characters");
+    
+    // Uppercase check
+    if (/[A-Z]/.test(password)) score += 1;
+    else suggestions.push("At least one uppercase letter");
+    
+    // Lowercase check
+    if (/[a-z]/.test(password)) score += 1;
+    else suggestions.push("At least one lowercase letter");
+    
+    // Number check
+    if (/\d/.test(password)) score += 1;
+    else suggestions.push("At least one number");
+    
+    // Special character check
+    if (/[!@#$%^&*(),.?":{}|<>]/.test(password)) score += 1;
+    else suggestions.push("At least one special character (!@#$%^&*)");
+    
+    // Determine strength level
+    let level = "weak";
+    if (score >= 4) level = "strong";
+    else if (score >= 2) level = "medium";
+    
+    return { strength: score, level, suggestions };
+};
 
 const validate = (values) => {
     const errors = {};
@@ -40,17 +66,58 @@ const validate = (values) => {
         errors.terms = "You must accept the terms";
     }
     return errors;
-  };
+};
 
-  const renderInput = ({ input, label, type, meta: { touched, error } }) => (
+const renderInput = ({ input, label, type, meta: { touched, error } }) => (
     <div className="form-group">
         <label>{label}</label>
         <input {...input} type={type} />
         {touched && error && <span className="error">{error}</span>}
     </div>
-  );
+);
 
-  const renderSelect = ({ input, label, meta: { touched, error } }) => (
+const renderPasswordInput = ({ input, label, type, meta: { touched, error } }) => {
+    const passwordStrength = checkPasswordStrength(input.value);
+    
+    return (
+        <div className="form-group">
+            <label>{label}</label>
+            <input {...input} type={type} />
+            {touched && error && <span className="error">{error}</span>}
+            
+            {/* Password Strength Bar */}
+            {input.value && (
+                <div className="password-strength-container">
+                    <div className="password-strength-bar">
+                        <div 
+                            className={`password-strength-fill ${passwordStrength.level}`}
+                            style={{ width: `${(passwordStrength.strength / 5) * 100}%` }}
+                        ></div>
+                    </div>
+                    <span className={`password-strength-text ${passwordStrength.level}`}>
+                        {passwordStrength.level.charAt(0).toUpperCase() + passwordStrength.level.slice(1)}
+                    </span>
+                </div>
+            )}
+            
+            {/* Password Suggestions */}
+            {input.value && passwordStrength.suggestions.length > 0 && (
+                <div className="password-suggestions">
+                    <p className="suggestions-title">Password must contain:</p>
+                    <ul className="suggestions-list">
+                        {passwordStrength.suggestions.map((suggestion, index) => (
+                            <li key={index} className="suggestion-item">
+                                {suggestion}
+                            </li>
+                        ))}
+                    </ul>
+                </div>
+            )}
+        </div>
+    );
+};
+
+const renderSelect = ({ input, label, meta: { touched, error } }) => (
     <div className="form-group">
         <label>{label}</label>
         <select {...input}>
@@ -63,51 +130,51 @@ const validate = (values) => {
         </select>
         {touched && error && <span className="error">{error}</span>}
     </div>
-  );
+);
 
-  const renderCheckbox = ({ input, label, meta: { touched, error } }) => (
+const renderCheckbox = ({ input, label, meta: { touched, error } }) => (
     <div className="form-group terms">
         <input {...input} type="checkbox" />
         <label>{label}</label>
         {touched && error && <span className="error">{error}</span>}
     </div>
-  );
+);
 
-  function RegistrationForm({ handleSubmit, submitting, invalid }) {
-  return (
-    <form className="registration-form" onSubmit={handleSubmit} autoComplete="off">
-      <h2>Create an Account</h2>
-      <Field name="name" label="Name" component={renderInput} type="text" />
-      <Field name="email" label="Email" component={renderInput} type="email" />
-      <Field name="password" label="Password" component={renderInput} type="password" />
-      <Field name="confirmPassword" label="Confirm Password" component={renderInput} type="password" />
-      <Field name="role" label="Role" component={renderSelect}>
-        {roles.map(role => (
-          <option key={role} value={role}>{role}</option>
-        ))}
-      </Field>
-      <Field
-        name="terms"
-        component={renderCheckbox}
-        label={<span>I accept the <Link to="/terms">terms &amp; conditions</Link></span>}
-        type="checkbox"
-      />
-      <button type="submit" disabled={invalid || submitting} className="submit-btn">
-        Register
-      </button>
-      <div className="login-link">
-        Already have an account? <Link to="/login">Login Here</Link>
-      </div>
-    </form>
-  );
+function RegistrationForm({ handleSubmit, submitting, invalid }) {
+    return (
+        <form className="registration-form" onSubmit={handleSubmit} autoComplete="off">
+            <h2>Create an Account</h2>
+            <Field name="name" label="Name" component={renderInput} type="text" />
+            <Field name="email" label="Email" component={renderInput} type="email" />
+            <Field name="password" label="Password" component={renderPasswordInput} type="password" />
+            <Field name="confirmPassword" label="Confirm Password" component={renderInput} type="password" />
+            <Field name="role" label="Role" component={renderSelect}>
+                {roles.map(role => (
+                    <option key={role} value={role}>{role}</option>
+                ))}
+            </Field>
+            <Field
+                name="terms"
+                component={renderCheckbox}
+                label={<span>I accept the <Link to="/terms">terms &amp; conditions</Link></span>}
+                type="checkbox"
+            />
+            <button type="submit" disabled={invalid || submitting} className="submit-btn">
+                Register
+            </button>
+            <div className="login-link">
+                Already have an account? <Link to="/login">Login Here</Link>
+            </div>
+        </form>
+    );
 }
 
 export default reduxForm({
-  form: "registrationForm",
-  validate,
-  initialValues: {
-    role: "User"
-  }
+    form: "registrationForm",
+    validate,
+    initialValues: {
+        role: "User"
+    }
 })(RegistrationForm);
 
 // export default function RegistrationForm({ onSubmit }) {

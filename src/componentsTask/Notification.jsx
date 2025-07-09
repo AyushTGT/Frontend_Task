@@ -38,16 +38,15 @@ const dropStyle = {
 };
 
 const buttonStyle = {
-    position: "fixed",
-    right: 10,
-    marginTop: -60,
-    width: 320,
-    background: "white",
-    boxShadow: "0 2px 12px rgba(0,0,0,0.15)",
-    zIndex: 1000,
-    borderRadius: 8,
-    maxHeight: 350,
-    overflowY: "auto",
+    background: "#f0f0f0",
+    border: "1px solid #ddd",
+    borderRadius: "4px",
+    padding: "6px 12px",
+    fontSize: "12px",
+    cursor: "pointer",
+    marginTop: "8px",
+    width: "auto",
+    position: "relative",
 };
 
 export default function NotificationBell({ assigneeId }) {

@@ -28,12 +28,17 @@ function Dashboard({ myProfile1 }) {
     const [selectedRole, setSelectedRole] = useState("User");
 
     const [myProfile, setMyProfile] = useState(null);
+    const [isUserView, setIsUserView] = useState(false); // New state for view toggle
     const token = Cookies.get("jwt_token");
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState("");
     const [success, setSuccess] = useState("");
 
     const searchTimeout = useRef(null);
+
+    // Determine effective user role based on toggle
+    const effectiveUserRole =
+        isUserView && myProfile?.post === "Master" ? "User" : myProfile?.post;
 
     // Getting the users from the backend with the applied parameters
     function fetchUsers({
@@ -59,7 +64,6 @@ function Dashboard({ myProfile1 }) {
                 });
             })
             .catch((error) => {
-                //In case jwt token is expired or any other error
                 if (error.message === "SessionExpired") {
                     setError("Session expired. Please log in again.");
                     Cookies.remove("jwt_token");
@@ -96,6 +100,13 @@ function Dashboard({ myProfile1 }) {
             Cookies.set("userid", myProfile?.id);
         }
     }, [isLoading, myProfile1]);
+
+    // Handle view toggle
+    const handleViewToggle = () => {
+        setIsUserView(!isUserView);
+        // Clear selections when switching views
+        setSelectedUsers([]);
+    };
 
     //Download users data as CSV by calling the backend API and the appropriate params
     const exportToCSV = ({ search, postFilter, sortField, sortOrder }) => {
@@ -171,12 +182,9 @@ function Dashboard({ myProfile1 }) {
 
     // Handle selecting all users
     const handleSelectAll = (checked) => {
-        //setSelectedUsers(checked ? users.map((u) => u.id) : []);
         setSelectedUsers(
             checked
-                ? users
-                      .filter((u) => u.deleted_by === null) // Only include users not deleted
-                      .map((u) => u.id)
+                ? users.filter((u) => u.deleted_by === null).map((u) => u.id)
                 : []
         );
     };
@@ -253,7 +261,6 @@ function Dashboard({ myProfile1 }) {
             )
             .then(({ status, data }) => {
                 if (status === 200) {
-                    // setError(data.message || "Users role changed.");
                     setSelectedUsers([]);
                     fetchUsers();
                     setSuccess(
@@ -281,6 +288,50 @@ function Dashboard({ myProfile1 }) {
     return (
         <div className="apple">
             <Header user={myProfile} />
+
+            {/* View Toggle - Only visible to Master users */}
+            {myProfile?.post === "Master" && (
+                <div className="view-toggle-container">
+                    <div className="view-toggle-wrapper">
+                        <span
+                            className={`toggle-label ${
+                                !isUserView ? "active" : ""
+                            }`}
+                        >
+                            Master View
+                        </span>
+                        <div className="toggle-switch">
+                            <input
+                                type="checkbox"
+                                id="viewToggle"
+                                checked={isUserView}
+                                onChange={handleViewToggle}
+                                className="toggle-input"
+                            />
+                            <label
+                                htmlFor="viewToggle"
+                                className="toggle-label-slider"
+                            >
+                                <span className="toggle-slider"></span>
+                            </label>
+                        </div>
+                        <span
+                            className={`toggle-label ${
+                                isUserView ? "active" : ""
+                            }`}
+                        >
+                            User View
+                        </span>
+                    </div>
+                    <div className="current-view-indicator">
+                        <span className="view-indicator">
+                            Currently viewing as:{" "}
+                            <strong>{effectiveUserRole}</strong>
+                        </span>
+                    </div>
+                </div>
+            )}
+
             <div>
                 <div className="filters-container">
                     {/* Search and filter */}
@@ -302,11 +353,10 @@ function Dashboard({ myProfile1 }) {
                     </select>
 
                     {/* Main actions */}
-
                     <button
                         onClick={() => setModalUserAdd({})}
                         className="add-user-btn"
-                        disabled={myProfile?.post === "User"}
+                        disabled={effectiveUserRole === "User"}
                     >
                         Add User
                     </button>
@@ -332,40 +382,42 @@ function Dashboard({ myProfile1 }) {
                     </button>
 
                     {/* Divider for bulk actions */}
-                    {myProfile?.post !== "User" && selectedUsers.length > 0 && (
-                        <div className="btn-container">
-                            <button
-                                onClick={handleBulkDelete}
-                                className="bulk-delete-btn"
-                                disabled={myProfile?.post !== "Master"}
-                            >
-                                Delete Selected
-                            </button>
-                            <select
-                                value={selectedRole}
-                                onChange={(e) =>
-                                    setSelectedRole(e.target.value)
-                                }
-                                className="select-input"
-                            >
-                                <option value="" disabled>
-                                    Select Role
-                                </option>
-                                <option value="User">User</option>
-                                <option value="Admin">Admin</option>
-                                <option value="Master">Master</option>
-                            </select>
-                            <button
-                                onClick={handleBulkRole}
-                                className="export-csv-btn"
-                                disabled={
-                                    !selectedRole || myProfile?.post === "User"
-                                }
-                            >
-                                Change Role
-                            </button>
-                        </div>
-                    )}
+                    {effectiveUserRole !== "User" &&
+                        selectedUsers.length > 0 && (
+                            <div className="btn-container">
+                                <button
+                                    onClick={handleBulkDelete}
+                                    className="bulk-delete-btn"
+                                    disabled={effectiveUserRole !== "Master"}
+                                >
+                                    Delete Selected
+                                </button>
+                                <select
+                                    value={selectedRole}
+                                    onChange={(e) =>
+                                        setSelectedRole(e.target.value)
+                                    }
+                                    className="select-input"
+                                >
+                                    <option value="" disabled>
+                                        Select Role
+                                    </option>
+                                    <option value="User">User</option>
+                                    <option value="Admin">Admin</option>
+                                    <option value="Master">Master</option>
+                                </select>
+                                <button
+                                    onClick={handleBulkRole}
+                                    className="export-csv-btn"
+                                    disabled={
+                                        !selectedRole ||
+                                        effectiveUserRole === "User"
+                                    }
+                                >
+                                    Change Role
+                                </button>
+                            </div>
+                        )}
                 </div>
 
                 {/* pagination control */}
@@ -454,7 +506,7 @@ function Dashboard({ myProfile1 }) {
                 <table border="1px solid black" className="users-table">
                     <thead>
                         <tr>
-                            <th hidden={myProfile?.post === "User"}>
+                            <th hidden={effectiveUserRole === "User"}>
                                 <input
                                     type="checkbox"
                                     checked={
@@ -527,7 +579,7 @@ function Dashboard({ myProfile1 }) {
                                         : " ▲▼"}
                                 </th>
                             ))}
-                            {myProfile?.post !== "User" && <th>Actions</th>}
+                            {effectiveUserRole !== "User" && <th>Actions</th>}
                         </tr>
                     </thead>
                     <tbody>
@@ -535,8 +587,13 @@ function Dashboard({ myProfile1 }) {
                             <tr
                                 key={user.id}
                                 onClick={() => setModalUser(user)}
+                                className={
+                                    selectedUsers.includes(user.id)
+                                        ? "selected"
+                                        : ""
+                                }
                             >
-                                <td hidden={myProfile?.post === "User"}>
+                                <td hidden={effectiveUserRole === "User"}>
                                     <input
                                         type="checkbox"
                                         checked={selectedUsers.includes(
@@ -550,32 +607,35 @@ function Dashboard({ myProfile1 }) {
                                         onClick={(e) => e.stopPropagation()}
                                     />
                                 </td>
-                                <td>{user.id}</td>
-                                <td>{user.name}</td>
-                                <td>{user.email}</td>
-                                <td>
+                                <td className="id-cell">{user.id}</td>
+                                <td className="name-cell">{user.name}</td>
+                                <td className="email-cell">{user.email}</td>
+                                <td className="date-cell">
                                     {new Date(user.created_at).toLocaleString()}
                                 </td>
-                                <td>{user.post}</td>
-                                <td>
+                                <td className="role-cell">
+                                    <span
+                                        className={`role-badge role-${user.post.toLowerCase()}`}
+                                    >
+                                        {user.post}
+                                    </span>
+                                </td>
+                                <td className="verify-cell">
                                     {user.email_verified_at ? (
-                                        <span style={{ color: "green" }}>
-                                            ✔
+                                        <span className="verified-badge">
+                                            ✔ Verified
                                         </span>
                                     ) : (
-                                        <div
-                                            style={{
-                                                display: "flex",
-                                                alignItems: "center",
-                                                gap: "0.5em",
-                                            }}
-                                        >
-                                            <span style={{ color: "red" }}>
-                                                ✘
+                                        <div className="verify-actions">
+                                            <span className="unverified-badge">
+                                                ✘ Unverified
                                             </span>
-                                            {myProfile?.post === "Master" && (
+                                            {effectiveUserRole === "Master" && (
                                                 <button
-                                                    className="user-action-btn edit-btn"
+                                                    disabled={
+                                                        user.deleted_by !== null
+                                                    }
+                                                    className="action-btn verify-btn"
                                                     onClick={(e) => {
                                                         e.stopPropagation();
                                                         fetch(
@@ -616,26 +676,23 @@ function Dashboard({ myProfile1 }) {
                                         </div>
                                     )}
                                 </td>
-                                <td>
-                                    <div className="user-status">
+                                <td className="status-cell">
+                                    <div className="status-container">
                                         <span
-                                            style={{
-                                                padding: "2px 6px",
-                                                borderRadius: 4,
-                                                background:
-                                                    user.deleted_by === null
-                                                        ? "#d4f7d4"
-                                                        : "#f7d4d4",
-                                            }}
+                                            className={
+                                                user.deleted_by === null
+                                                    ? "status-active"
+                                                    : "status-deactivated"
+                                            }
                                         >
                                             {user.deleted_by !== null
                                                 ? "Deactivated"
                                                 : "Active"}
                                         </span>
                                         {user.deleted_by !== null &&
-                                            myProfile.post === "Master" && (
+                                            effectiveUserRole === "Master" && (
                                                 <button
-                                                    className="user-action-btn edit-btn"
+                                                    className="action-btn reactivate-btn"
                                                     onClick={(e) => {
                                                         e.stopPropagation();
                                                         fetch(
@@ -675,64 +732,67 @@ function Dashboard({ myProfile1 }) {
                                             )}
                                     </div>
                                 </td>
-                                <td>
+                                <td className="online-cell">
                                     {user.last_logout === null ? (
-                                        <span style={{ color: "green" }}>
-                                            Online
-                                        </span>
+                                        <span className="online">● Online</span>
                                     ) : (
-                                        <span style={{ color: "red" }}>
-                                            Offline
+                                        <span className="offline">
+                                            ● Offline
                                         </span>
                                     )}
                                 </td>
-                                {myProfile?.post !== "User" && (
-                                    <td>
-                                        <button
-                                            className="user-action-btn edit-btn"
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                setModalUser(user);
-                                            }}
-                                            title={
-                                                user.deleted_by !== null
-                                                    ? "User no more available"
-                                                    : ""
-                                            }
-                                            disabled={
-                                                user.deleted_by !== null ||
-                                                myProfile?.post === "User"
-                                            }
-                                        >
-                                            {user.deleted_by !== null
-                                                ? "User Unavailable"
-                                                : myProfile?.post === "User"
-                                                ? "You can't Edit"
-                                                : "Edit"}
-                                        </button>
-                                        <button
-                                            className="user-action-btn delete-btn"
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                handleDeleteUser(user.id);
-                                            }}
-                                            disabled={
-                                                user.deleted_by !== null ||
-                                                myProfile?.post !== "Master" ||
-                                                user.post === "Master" ||
-                                                user.id === myProfile.id
-                                            }
-                                        >
-                                            {user.id === myProfile.id
-                                                ? "Can't Delete Self"
-                                                : user.deleted_by !== null
-                                                ? "User Unavailable"
-                                                : myProfile?.post !== "Master"
-                                                ? "You can't Delete"
-                                                : user.post === "Master"
-                                                ? "Master can't be deleted"
-                                                : "Delete"}
-                                        </button>
+                                {effectiveUserRole !== "User" && (
+                                    <td className="actions-cell">
+                                        <div className="action-buttons">
+                                            <button
+                                                className="action-btn edit-btn"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    setModalUser(user);
+                                                }}
+                                                title={
+                                                    user.deleted_by !== null
+                                                        ? "User no more available"
+                                                        : ""
+                                                }
+                                                disabled={
+                                                    user.deleted_by !== null ||
+                                                    effectiveUserRole === "User"
+                                                }
+                                            >
+                                                {user.deleted_by !== null
+                                                    ? "N/A"
+                                                    : effectiveUserRole ===
+                                                      "User"
+                                                    ? "No Access"
+                                                    : "Edit"}
+                                            </button>
+                                            <button
+                                                className="action-btn delete-btn"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    handleDeleteUser(user.id);
+                                                }}
+                                                disabled={
+                                                    user.deleted_by !== null ||
+                                                    effectiveUserRole !==
+                                                        "Master" ||
+                                                    user.post === "Master" ||
+                                                    user.id === myProfile.id
+                                                }
+                                            >
+                                                {user.id === myProfile.id
+                                                    ? "Self"
+                                                    : user.deleted_by !== null
+                                                    ? "N/A"
+                                                    : effectiveUserRole !==
+                                                      "Master"
+                                                    ? "No Access"
+                                                    : user.post === "Master"
+                                                    ? "Master"
+                                                    : "Delete"}
+                                            </button>
+                                        </div>
                                     </td>
                                 )}
                             </tr>
@@ -741,7 +801,6 @@ function Dashboard({ myProfile1 }) {
                 </table>
 
                 {/* Modal */}
-
                 <UserModal
                     myProfile={myProfile}
                     user={modalUser}
