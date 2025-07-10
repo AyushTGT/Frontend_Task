@@ -7,6 +7,7 @@ import TaskDetailModal from "../../modals/TaskDetailModal.jsx";
 import axios from "axios";
 import Cookies from "js-cookie";
 import ErrorModal from "../../modals/ErrorModal.jsx";
+import SuccessModal from "../../modals/SuccessModal.jsx";
 
 const KANBAN_STAGES = [
     { id: "unassigned", title: "UNASSIGNED", apiStatus: "unassigned" },
@@ -40,6 +41,7 @@ export function TasksListPage({ user }) {
     const token = Cookies.get("jwt_token");
     const [reporterOptions, setReporterOptions] = useState([]);
     const [errors, setErrors] = useState(null);
+    const [success, setSuccess] = useState(null);
 
     useEffect(() => {
         axios
@@ -112,11 +114,16 @@ export function TasksListPage({ user }) {
             );
             setTaskDetailOpen(false);
             fetchTasks();
+            setSuccess("Task updated successfully");
         } catch (err) {
-            alert(
+            setTaskDetailOpen(false);
+            setErrors(
                 "Error updating task: " +
                     (err.response?.data?.message || err.message)
             );
+            setTimeout(() => {
+                window.location.reload();
+            }, 1000);
         }
     };
 
@@ -220,7 +227,7 @@ export function TasksListPage({ user }) {
 
             <TaskDetailModal
                 open={taskDetailOpen}
-                onClose={() => setTaskDetailOpen(false)}
+                onClose={() => {setTaskDetailOpen(false); window.location.reload();}}
                 task={modalTask}
                 onUpdate={handleTaskUpdate}
                 userOptions={reporterOptions}
@@ -231,6 +238,12 @@ export function TasksListPage({ user }) {
                 open={!!errors}
                 message={errors}
                 onClose={() => setErrors("")}
+            />
+            <SuccessModal
+                open={!!success}
+                message={success}
+                onClose={() => setSuccess("")}
+                title="Successful"
             />
         </>
     );

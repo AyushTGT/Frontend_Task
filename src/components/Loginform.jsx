@@ -46,6 +46,8 @@ export default function Loginform({ onSubmit }) {
     const validateAll = () => {
         let currErrors = {};
         Object.keys(form).forEach((key) => {
+            // Skip validation for rememberMe checkbox
+            if (key === "rememberMe" || key === "recaptchaToken") return;
             const errorMsg = validateField(key, form[key]);
             if (errorMsg) currErrors[key] = errorMsg;
         });
@@ -83,7 +85,6 @@ export default function Loginform({ onSubmit }) {
             form.email &&
             /^\S+@\S+\.\S+$/.test(form.email) &&
             form.password.length > 0
-            
         );
     }, [form.email, form.password]);
 
@@ -127,6 +128,21 @@ export default function Loginform({ onSubmit }) {
                 {errors.password && (
                     <span className="error">{errors.password}</span>
                 )}
+            </div>
+
+            {/* Add Remember Me checkbox */}
+            <div className="form-group checkbox-group">
+                <label className="checkbox-label">
+                    <input
+                        type="checkbox"
+                        name="rememberMe"
+                        checked={form.rememberMe}
+                        onChange={handleChange}
+                        disabled={isLoading}
+                    />
+                    <span className="checkmark"></span>
+                    Remember Me
+                </label>
             </div>
 
             <ReCAPTCHA

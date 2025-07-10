@@ -6,6 +6,7 @@ import axios from "axios";
 import AddTaskModal from "../modals/AddTaskModal";
 import Cookies from "js-cookie";
 import SuccessModal from "../modals/SuccessModal";
+import ErrorModal from "../modals/ErrorModal";
 
 //Taks listing component from kanban listing page
 
@@ -76,6 +77,7 @@ export default function Tasklisting() {
                     open={addTaskOpen}
                     onClose={() => {
                         setAddTaskOpen(false);
+                        window.location.reload();
                     }}
                     userOptions={reporterOptions}
                     loggedInUser={user}
@@ -97,11 +99,14 @@ export default function Tasklisting() {
                                 window.location.reload();
                             }, 1000);
                         } catch (err) {
-                            console.error("Error adding task:", err);
-                            alert(
+                            setAddTaskOpen(false);
+                            setUserError(
                                 "Error adding task: " +
                                     (err.response?.data?.message || err.message)
                             );
+                            setTimeout(() => {
+                                window.location.reload();
+                            }, 1000);
                         }
                     }}
                 />
@@ -109,8 +114,14 @@ export default function Tasklisting() {
                 <SuccessModal
                     open={!!success}
                     message={success}
-                    onClose={() => setSuccess("")}
+                    onClose={() => {setSuccess(""); window.location.reload();}}
                     title="Successful"
+                />
+
+                <ErrorModal
+                    open={!!userError}
+                    message={userError}
+                    onClose={() => {setUserError(""); window.location.reload();}}
                 />
             </div>
         </div>

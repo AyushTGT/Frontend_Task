@@ -707,17 +707,17 @@ function Dashboard({ myProfile1 }) {
                                                             .then((res) => {
                                                                 if (!res.ok) {
                                                                     throw new Error(
-                                                                        "Failed to verify user."
+                                                                        "Failed to Reactivate user."
                                                                     );
                                                                 }
                                                                 return res.json();
                                                             })
                                                             .then((data) => {
                                                                 setSuccess(
-                                                                    data.message ||
-                                                                        "User verified successfully."
+                                                                    
+                                                                        "User Reactivated. "
                                                                 );
-                                                                fetchUsers();
+                                                               
                                                             })
                                                             .catch((err) => {
                                                                 setError(
@@ -804,7 +804,7 @@ function Dashboard({ myProfile1 }) {
                 <UserModal
                     myProfile={myProfile}
                     user={modalUser}
-                    onClose={() => setModalUser(null)}
+                    onClose={() => {setModalUser(null);window.location.reload();}}
                     onSave={(updatedUser) => {
                         setModalUser(null);
                         fetchUsers();
@@ -813,7 +813,7 @@ function Dashboard({ myProfile1 }) {
 
                 <UserModalAdd
                     user={modalUserAdd}
-                    onClose={() => setModalUserAdd(null)}
+                    onClose={() => {setModalUserAdd(null);window.location.reload();}}
                     onSave={(updatedUser) => {
                         setModalUserAdd(null);
                         fetchUsers();
@@ -823,13 +823,13 @@ function Dashboard({ myProfile1 }) {
                 <ErrorModal
                     open={!!error}
                     message={error}
-                    onClose={() => setError("")}
+                    onClose={() => {setError("");window.location.reload();}}
                 />
 
                 <SuccessModal
                     open={!!success}
                     message={success}
-                    onClose={() => setSuccess("")}
+                    onClose={() => {setSuccess("");window.location.reload();}}
                 />
             </div>
         </div>

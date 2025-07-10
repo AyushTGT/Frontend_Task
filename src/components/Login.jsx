@@ -6,14 +6,14 @@ import ErrorModal from "../modals/ErrorModal";
 import Loginform from "./Loginform";
 import "./Dashboard.css";
 
-//Handling login logic with fomr in loginform.jsx page
+//Handling login logic with form in loginform.jsx page
 
 export default function LoginPage() {
     const [error, setError] = useState(null);
     const navigate = useNavigate();
 
     const handleFormSubmit = async (formData) => {
-        const { email, password, recaptchaToken } = formData;
+        const { email, password, recaptchaToken, rememberMe } = formData;
 
         try {
             const response = await fetch(
@@ -74,6 +74,7 @@ export default function LoginPage() {
             data.append("email", email);
             data.append("password", password);
             data.append("recaptchaToken", recaptchaToken);
+            data.append("rememberMe", rememberMe ? "1" : "0");
 
             const regResponse = await fetch(`${process.env.REACT_APP_API_URL}/login`, {
                 method: "POST",
@@ -88,7 +89,12 @@ export default function LoginPage() {
                 return;
             }
 
-            Cookies.set("jwt_token", result.token, { expires: 7 });
+            // Set cookie expiration based on rememberMe
+            const cookieOptions = {
+                expires: rememberMe ? 30 : 7 // 30 days if remember me, otherwise 7 days
+            };
+            
+            Cookies.set("jwt_token", result.token, cookieOptions);
 
             navigate("/Home");
         } catch (error) {

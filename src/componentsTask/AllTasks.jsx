@@ -232,10 +232,14 @@ export default function AllTasks() {
             fetchUsers();
             setSuccess("Task updated successfully!");
         } catch (err) {
+            setTaskDetailOpen(false);
             setError(
                 "Error updating task: " +
                     (err.response?.data?.message || err.message)
             );
+            setTimeout(() => {
+                window.location.reload();
+            }, 1000);
         }
     };
     const selectOptions = [
@@ -672,6 +676,7 @@ export default function AllTasks() {
                     open={addTaskOpen}
                     onClose={() => {
                         setAddTaskOpen(false);
+                        window.location.reload();
                     }}
                     userOptions={reporterOptions}
                     loggedInUser={myProfile}
@@ -690,6 +695,7 @@ export default function AllTasks() {
                             fetchUsers();
                             setSuccess("Task added successfully!");
                         } catch (err) {
+                            setAddTaskOpen(false);
                             setError(
                                 "Error adding task: " +
                                     (err.response?.data?.message || err.message)
@@ -701,12 +707,12 @@ export default function AllTasks() {
                 <ErrorModal
                     open={!!error}
                     message={error}
-                    onClose={() => setError("")}
+                    onClose={() => {setError(""); window.location.reload();}}
                 />
 
                 <TaskDetailModal
                     open={taskDetailOpen}
-                    onClose={() => setTaskDetailOpen(false)}
+                    onClose={() => {setTaskDetailOpen(false); window.location.reload();}}
                     task={modalTask}
                     onUpdate={handleTaskUpdate}
                     userOptions={reporterOptions}
@@ -716,7 +722,7 @@ export default function AllTasks() {
                 <SuccessModal
                     open={!!success}
                     message={success}
-                    onClose={() => setSuccess("")}
+                    onClose={() => {setSuccess(""); window.location.reload();}}
                 />
             </div>
         </div>

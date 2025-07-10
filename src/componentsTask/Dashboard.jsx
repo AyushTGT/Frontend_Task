@@ -157,24 +157,42 @@ export default function Dashboardtask() {
 
     // Fetch today's tasks for logged-in user
     useEffect(() => {
-        async function fetchTodayTasks() {
-            if (!user?.id) return;
-            
-            setTodayTasksLoading(true);
-            try {
-                const today = new Date().toISOString().slice(0, 10);
-                let url = `${process.env.REACT_APP_API_URL}/tasks-due-today?assignee=${user.id}&due_date=${today}`;
-                const response = await fetch(url);
-                const result = await response.json();
-                setTodayTasks(result.data || []);
-            } catch (err) {
-                console.error("Failed to fetch today's tasks:", err);
-                setTodayTasks([]);
+    async function fetchTodayTasks() {
+        setTodayTasksLoading(true);
+        try {
+            let url = `${process.env.REACT_APP_API_URL}/dueToday`;
+            const params = new URLSearchParams(assigneeObj).toString();
+            if (params) {
+                url += `?${params}`;
             }
-            setTodayTasksLoading(false);
+            const response = await fetch(url);
+            const result = await response.json();
+            
+            const transformedData = (result.data || result || []).map(task => ({
+                id: task.id,
+                title: task.title,
+                description: task.description,
+                status: task.status,
+                updated_at: task.updated_at,
+                created_at: task.created_at,
+                due_date: task.due_date,
+                priority: task.priority || 'medium',
+                assignee: task.assignee,
+                project_name: task.project_name,
+                type: 'task'
+            }));
+            
+            setTodayTasks(transformedData);
+            console.log("Today's Tasks:", transformedData);
+        } catch (err) {
+            console.error("Failed to fetch today's tasks:", err);
+            setTodayTasks([]);
         }
-        fetchTodayTasks();
-    }, [user?.id]);
+        setTodayTasksLoading(false);
+    }
+    fetchTodayTasks();
+    console.log(todayTasks);
+}, [selectedAssignee]);
 
     const [tasksPerDayData, setTasksPerDayData] = useState({
         labels: Array.from({ length: 7 }, (_, i) => {
@@ -598,7 +616,7 @@ export default function Dashboardtask() {
                     <div className="activity-card">
                         <div className="activity-header">
                             <h3>Recent Activities</h3>
-                            <div className="activity-icon">📊</div>
+                            <div className="activity-icon"></div>
                         </div>
                         <div className="activity-content">
                             {activitiesLoading ? (
@@ -642,7 +660,7 @@ export default function Dashboardtask() {
                     <div className="activity-card">
                         <div className="activity-header">
                             <h3>Tasks Due Today</h3>
-                            <div className="activity-icon">📅</div>
+                            <div className="activity-icon"></div>
                         </div>
                         <div className="activity-content">
                             {todayTasksLoading ? (
@@ -675,7 +693,7 @@ export default function Dashboardtask() {
                                 </div>
                             ) : (
                                 <div className="empty-state">
-                                    <div className="empty-icon">🎉</div>
+                                    <div className="empty-icon"></div>
                                     <p>You have no tasks due today!</p>
                                     <small>Great job staying on top of your work!</small>
                                 </div>

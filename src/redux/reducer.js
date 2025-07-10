@@ -5,6 +5,7 @@ const initialState = {
         email: "",
         password: "",
         recaptchaToken: "",
+        rememberMe: false,
     },
     errors: {},
     isLoading: false,

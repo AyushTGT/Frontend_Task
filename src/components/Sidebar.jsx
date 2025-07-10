@@ -1,5 +1,5 @@
 import { useNavigate, useLocation } from "react-router-dom";
-import { TeamOutlined, HomeOutlined } from "@ant-design/icons";
+import { TeamOutlined, HomeOutlined, MailOutlined } from "@ant-design/icons";
 import "../componentsTask/Sidebar.css";
 
 export default function SidebarUser() {
@@ -9,6 +9,7 @@ export default function SidebarUser() {
     const menuItems = [
         { name: "User Listing", path: "/dashboard", icon: <TeamOutlined /> },
         { name: "User Card", path: "/usercard", icon: <TeamOutlined /> },
+        { name: "User Messaging", path: "/messaging", icon: <MailOutlined />},
         { name: "Task Management", path: "/Home", icon: <HomeOutlined /> },
     ];
 

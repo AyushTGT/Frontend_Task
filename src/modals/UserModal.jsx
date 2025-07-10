@@ -7,6 +7,258 @@ import ErrorModal from "./ErrorModal";
 const roleOptions = ["User", "Admin", "Master"];
 
 // Styles for UserModal
+
+function UserModal({ myProfile, user, onClose, onSave }) {
+    const [form, setForm] = useState(user || {});
+    const [userTasks, setUserTasks] = useState([]);
+    const [tasksLoading, setTasksLoading] = useState(false);
+    const token = Cookies.get("jwt_token");
+    const [error, setError] = useState("");
+    const [success, setSuccess] = useState("");
+
+    useEffect(() => {
+        setForm(user || {});
+
+        // Fetch user's assigned tasks when modal opens
+        if (user?.id) {
+            fetchUserTasks(user.id);
+        }
+    }, [user]);
+
+    const fetchUserTasks = async (userId) => {
+        setTasksLoading(true);
+        try {
+            const response = await fetch(
+                `${process.env.REACT_APP_API_URL}/filterTasks?assignee=${userId}`,
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
+
+            if (response.ok) {
+                const data = await response.json();
+                setUserTasks(data.tasks || []);
+            } else {
+                console.error("Failed to fetch user tasks");
+                setUserTasks([]);
+            }
+        } catch (error) {
+            console.error("Error fetching user tasks:", error);
+            setUserTasks([]);
+        } finally {
+            setTasksLoading(false);
+        }
+    };
+
+    if (!user) return null;
+
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        setForm((prev) => ({
+            ...prev,
+            [name]: value,
+        }));
+    };
+
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        fetch(`${process.env.REACT_APP_API_URL}/updateUser/${user.id}`, {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify(form),
+        })
+            .then(async (res) => {
+                const data = await res.json();
+                if (!res.ok) {
+                    setError(
+                        data.error ||
+                            "An error occurred while updating the user."
+                    );
+                    return;
+                }
+                setSuccess("User details updated successfully!");
+                setTimeout(() => {
+                    onSave(data);
+                }, 1500);
+            })
+            .catch((err) => {
+                setError("Network error: " + err.message);
+            });
+    };
+
+    const formatDate = (dateString) => {
+        if (!dateString) return "Not set";
+        return new Date(dateString + "T00:00:00").toLocaleDateString("en-US", {
+            year: "numeric",
+            month: "short",
+            day: "numeric",
+        });
+    };
+
+    return (
+        <>
+            <style>{userModalStyles}</style>
+            <div className="user-modal-backdrop" onClick={onClose}>
+                <div
+                    className="user-modal"
+                    onClick={(e) => e.stopPropagation()}
+                >
+                    <h3 className="user-modal-header">Edit User Details</h3>
+
+                    <div className="user-modal-content">
+                        <div className="user-form-section">
+                            <h4>Personal Information</h4>
+                            <form onSubmit={handleSubmit}>
+                                <div className="user-form-group">
+                                    <label>ID:</label>
+                                    <input
+                                        type="text"
+                                        value={form.id}
+                                        disabled
+                                        className="user-form-input"
+                                    />
+                                </div>
+                                <div className="user-form-group">
+                                    <label>Name:</label>
+                                    <input
+                                        name="name"
+                                        value={form.name || ""}
+                                        onChange={handleChange}
+                                        disabled={myProfile?.post === "User"}
+                                        className="user-form-input"
+                                    />
+                                </div>
+                                <div className="user-form-group">
+                                    <label>Email:</label>
+                                    <input
+                                        name="email"
+                                        value={form.email || ""}
+                                        onChange={handleChange}
+                                        disabled={myProfile?.post === "User"}
+                                        className="user-form-input"
+                                    />
+                                </div>
+                                <div className="user-form-group">
+                                    <label>Role:</label>
+                                    <select
+                                        name="post"
+                                        value={form.post || roleOptions[0]}
+                                        onChange={handleChange}
+                                        disabled={myProfile?.post === "User"}
+                                        className="user-form-select"
+                                    >
+                                        {roleOptions.map((role) => (
+                                            <option key={role} value={role}>
+                                                {role.charAt(0).toUpperCase() +
+                                                    role.slice(1)}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+                            </form>
+                        </div>
+
+                        {/* User's Assigned Tasks Section */}
+                        <div className="user-tasks-section">
+                            <div className="user-tasks-header">
+                                <h4 className="user-tasks-title">
+                                    Assigned Tasks
+                                </h4>
+                                <span className="user-tasks-count">
+                                    {userTasks.length} task
+                                    {userTasks.length !== 1 ? "s" : ""}
+                                </span>
+                            </div>
+
+                            <div className="user-tasks-list">
+                                {tasksLoading ? (
+                                    <div className="user-tasks-loading">
+                                        Loading tasks...
+                                    </div>
+                                ) : userTasks.length === 0 ? (
+                                    <div className="user-no-tasks">
+                                        No tasks assigned to this user
+                                    </div>
+                                ) : (
+                                    userTasks.map((task) => (
+                                        <div
+                                            key={task.id}
+                                            className="user-task-item"
+                                        >
+                                            <div className="user-task-title">
+                                                {task.title}
+                                            </div>
+                                            <div className="user-task-details">
+                                                <span
+                                                    className={`user-task-status ${task.status?.toLowerCase()}`}
+                                                >
+                                                    {task.status}
+                                                </span>
+                                                <span
+                                                    className={`user-task-priority ${task.priority?.toLowerCase()}`}
+                                                >
+                                                    {task.priority} Priority
+                                                </span>
+                                                <span>
+                                                    Due:{" "}
+                                                    {formatDate(task.due_date)}
+                                                </span>
+                                                {task.project_name && (
+                                                    <span>
+                                                        Project:{" "}
+                                                        {task.project_name}
+                                                    </span>
+                                                )}
+                                            </div>
+                                        </div>
+                                    ))
+                                )}
+                            </div>
+                        </div>
+
+                        <div className="user-modal-actions">
+                            <button
+                                type="submit"
+                                onClick={handleSubmit}
+                                hidden={myProfile?.post === "User"}
+                                className="user-modal-btn primary"
+                            >
+                                Save Changes
+                            </button>
+                            <button
+                                type="button"
+                                onClick={onClose}
+                                className="user-modal-btn secondary"
+                            >
+                                Cancel
+                            </button>
+                        </div>
+                    </div>
+
+                    <ErrorModal
+                        open={!!error}
+                        message={error}
+                        onClose={() => setError("")}
+                    />
+                    <SuccessModal
+                        open={!!success}
+                        message={success}
+                        onClose={() => setSuccess("")}
+                    />
+                </div>
+            </div>
+        </>
+    );
+}
+
+export default UserModal;
+
+
 const userModalStyles = `
 .user-modal-backdrop {
     position: fixed;
@@ -282,278 +534,4 @@ const userModalStyles = `
     padding: 32px;
     color: #6b7280;
 }
-
-@media (max-width: 768px) {
-    .user-modal {
-        width: 95%;
-        margin: 10px;
-    }
-    
-    .user-modal-content {
-        padding: 16px;
-    }
-    
-    .user-task-details {
-        flex-direction: column;
-        gap: 8px;
-    }
-    
-    .user-modal-actions {
-        flex-direction: column;
-    }
-    
-    .user-modal-btn {
-        width: 100%;
-    }
-}
 `;
-
-function UserModal({ myProfile, user, onClose, onSave }) {
-    const [form, setForm] = useState(user || {});
-    const [userTasks, setUserTasks] = useState([]);
-    const [tasksLoading, setTasksLoading] = useState(false);
-    const token = Cookies.get("jwt_token");
-    const [error, setError] = useState("");
-    const [success, setSuccess] = useState("");
-
-    useEffect(() => {
-        setForm(user || {});
-
-        // Fetch user's assigned tasks when modal opens
-        if (user?.id) {
-            fetchUserTasks(user.id);
-        }
-    }, [user]);
-
-    const fetchUserTasks = async (userId) => {
-        setTasksLoading(true);
-        try {
-            const response = await fetch(
-                `${process.env.REACT_APP_API_URL}/filterTasks?assignee=${userId}`,
-                {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
-                }
-            );
-
-            if (response.ok) {
-                const data = await response.json();
-                setUserTasks(data.tasks || []);
-            } else {
-                console.error("Failed to fetch user tasks");
-                setUserTasks([]);
-            }
-        } catch (error) {
-            console.error("Error fetching user tasks:", error);
-            setUserTasks([]);
-        } finally {
-            setTasksLoading(false);
-        }
-    };
-
-    if (!user) return null;
-
-    const handleChange = (e) => {
-        const { name, value } = e.target;
-        setForm((prev) => ({
-            ...prev,
-            [name]: value,
-        }));
-    };
-
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        fetch(`${process.env.REACT_APP_API_URL}/updateUser/${user.id}`, {
-            method: "PUT",
-            headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${token}`,
-            },
-            body: JSON.stringify(form),
-        })
-            .then(async (res) => {
-                const data = await res.json();
-                if (!res.ok) {
-                    setError(
-                        data.error ||
-                            "An error occurred while updating the user."
-                    );
-                    return;
-                }
-                setSuccess("User details updated successfully!");
-                setTimeout(() => {
-                    onSave(data);
-                }, 1500);
-            })
-            .catch((err) => {
-                setError("Network error: " + err.message);
-            });
-    };
-
-    const formatDate = (dateString) => {
-        if (!dateString) return "Not set";
-        return new Date(dateString + "T00:00:00").toLocaleDateString("en-US", {
-            year: "numeric",
-            month: "short",
-            day: "numeric",
-        });
-    };
-
-    return (
-        <>
-            <style>{userModalStyles}</style>
-            <div className="user-modal-backdrop" onClick={onClose}>
-                <div
-                    className="user-modal"
-                    onClick={(e) => e.stopPropagation()}
-                >
-                    <h3 className="user-modal-header">Edit User Details</h3>
-
-                    <div className="user-modal-content">
-                        <div className="user-form-section">
-                            <h4>Personal Information</h4>
-                            <form onSubmit={handleSubmit}>
-                                <div className="user-form-group">
-                                    <label>ID:</label>
-                                    <input
-                                        type="text"
-                                        value={form.id}
-                                        disabled
-                                        className="user-form-input"
-                                    />
-                                </div>
-                                <div className="user-form-group">
-                                    <label>Name:</label>
-                                    <input
-                                        name="name"
-                                        value={form.name || ""}
-                                        onChange={handleChange}
-                                        disabled={myProfile?.post === "User"}
-                                        className="user-form-input"
-                                    />
-                                </div>
-                                <div className="user-form-group">
-                                    <label>Email:</label>
-                                    <input
-                                        name="email"
-                                        value={form.email || ""}
-                                        onChange={handleChange}
-                                        disabled={myProfile?.post === "User"}
-                                        className="user-form-input"
-                                    />
-                                </div>
-                                <div className="user-form-group">
-                                    <label>Role:</label>
-                                    <select
-                                        name="post"
-                                        value={form.post || roleOptions[0]}
-                                        onChange={handleChange}
-                                        disabled={myProfile?.post === "User"}
-                                        className="user-form-select"
-                                    >
-                                        {roleOptions.map((role) => (
-                                            <option key={role} value={role}>
-                                                {role.charAt(0).toUpperCase() +
-                                                    role.slice(1)}
-                                            </option>
-                                        ))}
-                                    </select>
-                                </div>
-                            </form>
-                        </div>
-
-                        {/* User's Assigned Tasks Section */}
-                        <div className="user-tasks-section">
-                            <div className="user-tasks-header">
-                                <h4 className="user-tasks-title">
-                                    Assigned Tasks
-                                </h4>
-                                <span className="user-tasks-count">
-                                    {userTasks.length} task
-                                    {userTasks.length !== 1 ? "s" : ""}
-                                </span>
-                            </div>
-
-                            <div className="user-tasks-list">
-                                {tasksLoading ? (
-                                    <div className="user-tasks-loading">
-                                        Loading tasks...
-                                    </div>
-                                ) : userTasks.length === 0 ? (
-                                    <div className="user-no-tasks">
-                                        No tasks assigned to this user
-                                    </div>
-                                ) : (
-                                    userTasks.map((task) => (
-                                        <div
-                                            key={task.id}
-                                            className="user-task-item"
-                                        >
-                                            <div className="user-task-title">
-                                                {task.title}
-                                            </div>
-                                            <div className="user-task-details">
-                                                <span
-                                                    className={`user-task-status ${task.status?.toLowerCase()}`}
-                                                >
-                                                    {task.status}
-                                                </span>
-                                                <span
-                                                    className={`user-task-priority ${task.priority?.toLowerCase()}`}
-                                                >
-                                                    {task.priority} Priority
-                                                </span>
-                                                <span>
-                                                    Due:{" "}
-                                                    {formatDate(task.due_date)}
-                                                </span>
-                                                {task.project_name && (
-                                                    <span>
-                                                        Project:{" "}
-                                                        {task.project_name}
-                                                    </span>
-                                                )}
-                                            </div>
-                                        </div>
-                                    ))
-                                )}
-                            </div>
-                        </div>
-
-                        <div className="user-modal-actions">
-                            <button
-                                type="submit"
-                                onClick={handleSubmit}
-                                hidden={myProfile?.post === "User"}
-                                className="user-modal-btn primary"
-                            >
-                                Save Changes
-                            </button>
-                            <button
-                                type="button"
-                                onClick={onClose}
-                                className="user-modal-btn secondary"
-                            >
-                                Cancel
-                            </button>
-                        </div>
-                    </div>
-
-                    <ErrorModal
-                        open={!!error}
-                        message={error}
-                        onClose={() => setError("")}
-                    />
-                    <SuccessModal
-                        open={!!success}
-                        message={success}
-                        onClose={() => setSuccess("")}
-                    />
-                </div>
-            </div>
-        </>
-    );
-}
-
-export default UserModal;

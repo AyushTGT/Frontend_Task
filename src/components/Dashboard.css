@@ -900,21 +900,7 @@
     margin-bottom: 0;
 }
 
-/* Dark mode support (optional) */
-@media (prefers-color-scheme: dark) {
-    .password-suggestions {
-        background-color: #2d3748;
-        border-color: #4a5568;
-    }
-    
-    .suggestions-title {
-        color: #e2e8f0;
-    }
-    
-    .suggestion-item {
-        color: #a0aec0;
-    }
-}
+
 
 /* View Toggle Container */
 .view-toggle-container {

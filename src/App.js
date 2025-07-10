@@ -15,6 +15,7 @@ import Sidebar from "./componentsTask/Sidebar";
 import AllTasks from "./componentsTask/AllTasks";
 import UserCards from "./components/UserCards";
 import SidebarUser from "./components/Sidebar";
+import Messaging from "./components/Messaging";
 import { useDispatch } from "react-redux";
 import { fetchProfile } from "./redux/profileActions";
 import { useSelector } from "react-redux";
@@ -81,6 +82,7 @@ function App() {
                 <Route element={<SidebarLayoutUser />}>
                     <Route path="/dashboard" element={<Dashboard />} />
                     <Route path="/usercard" element={<UserCards />} />
+                    <Route path="/messaging" element={<Messaging />} />
                 </Route>
 
                 {/* All other routes */}

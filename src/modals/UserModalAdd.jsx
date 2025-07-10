@@ -177,13 +177,13 @@ function UserModalAdd({ user, onClose, onSave }) {
                 <ErrorModal
                     open={!!error}
                     message={error}
-                    onClose={() => setError("")}
+                    onClose={() => {setError(""); window.location.reload();}}
                 />      
 
                 <SuccessModal
                     open={!!success}
                     message={success}
-                    onClose={() => setSuccess("")}
+                    onClose={() => {setSuccess(""); window.location.reload();}}
                 />
             </div>
         </div>
